@@ -98,13 +98,22 @@ musicTopology <- function() {
   # a song with respect to the observed tone's time signiture. Persistence 
   # in this case is calculated using the nesting of Vietoris-Rips complexes.
   persChroma <- ripsDiag(X = chromMatrix, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
+  
+  pdf(paste(getwd(),"/plots/persChroma.pdf",sep=""),"pdf")
   plot(persChroma)
+  dev.off()
   
   persChroma2 <- ripsDiag(X = chromMatrix2, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
+  
+  pdf(paste(getwd(),"/plots/persChroma2.pdf",sep=""),"pdf")
   plot(persChroma2)  
+  dev.off()
   
   persChroma3 <- ripsDiag(X = chromMatrix3, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
+  
+  pdf(paste(getwd(),"/plots/perschroma3.pdf",sep=""),"pdf")
   plot(persChroma3)
+  dev.off()
 
 
   # Calculate the q-Wasserstein distance between persistence diagrams
@@ -178,12 +187,66 @@ musicTopology <- function() {
  simSong = match(minBtl, bottleneckSongs)
  # plot the persistence diagram of the song most similar to 
  # persitent homology of the first son
+ pdf(paste(getwd(),"/plots/persexample.pdf",sep=""),"pdf")
  plot(persChromaSongs[[simSong]])
+ dev.off()
  # Need to figure out how to find the attribute giving sonf title
  # I want to hear it!
  #print(h5attr(songData[[simSong]],"TITLE"))
  
+ pairwisePersistence < function(args , write , fromFolders){
+   " Returns the pairwise persistence diagrams between 
+    all elements in 'args' as a list if 'write' is missing.
+    Otherwise, if 'fromFolders' is missing and 'write' is TRUE 
+    then computes the pairwise persistence diagrams of all 
+    elements in args and writes it to 'pairwisePersistence.csv' 
+    by default or as 'fileName.csv' if file name specified as 
+    string in 'fileName' "
+   if(!missing(write) & !missing(args) | write == TRUE & !missing(args)){
+     #write to csv file pairwise distance of all elements in 'args'
+     
+     if(!missing(fileName)){
+       # write to specified filename
+       
+       #write.csv(dataFrame, row.names = FALSE, file = paste("output/",fileName,".csv",sep=""))
+     }
+     else{
+       #write.csv(dataFrame, row.names = FALSE, file = "output/pairwisePersistence.csv")
+     }
+   }
+   if(!missing(write) & !missing(fromFolders) | write == TRUE & !missing(fromFolders)){
+     # write to csv file pairwise distance between all data files
+     # recursively for all data files in folders specified 
+     # by 'fromFolders'
+   }
+   else{
+     pairwisePersistence <- c()
+     
+     return(pairwisePersistence)
+   }
+ }
+ pairwiseBottleneck <- function(read, matrixData, diags){
+ " Function computes the pairwise bottleneck distance between 
+   persistence diagrams. If read = True this function uses pairwisePersistence() 
+   function's output, i.e. reads from csv file 'pairwisePersistence.csv' 
+   to construct the matrix of pairwise persistence diagrams between songs
+ "
+   # computes pairwise bottleneck distance between
+   # all diagram elements stored to file 'read'
+   if(!missing(read)){
+     
+   }
+   # computes pairwise bottleneck distance between
+   # all diagram elements in diag
+   if(!missing(diags)){
+     
+   }
+   # computes pairwise bottleneck distance between
+   # all matrix data elements in natrixData
+   if(!missing(matrixData)){
+     
+   }
  
- 
+ }
  
 }
