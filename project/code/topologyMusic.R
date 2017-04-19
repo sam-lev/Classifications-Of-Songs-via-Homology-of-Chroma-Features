@@ -249,4 +249,26 @@ musicTopology <- function() {
  
  }
  
+ topomdscale <- function(bottleneck,pwasserstein, p, fromFile){
+   " Performs Topological Multi-Dimensional Scaling between 
+     the distance structure of pairwise bottleneck distances
+     as provided by 'bottleneck' or the distance structure 'pwasserstein'
+     using p-wasserstein distances with p given by argument 'p'.
+     If 'fromFile' is provided csv file specified by fromFile is 
+     read as the distance structure to be used."
+   if (!require(package = "cmdscale")) {
+     install.packages("cmdscale")
+   }
+   library("cmdscale")
+   
+   if(!missing(fromFile)){
+     distMat <- read.csv(fromFile)
+     mds <- cmdscale(distMat, eig=TRUE, k=2)
+     x <- mds$points[, 1]
+     y <- mds$points[, 2]
+     
+     plot(x,y)
+   }
+ }
+ 
 }
