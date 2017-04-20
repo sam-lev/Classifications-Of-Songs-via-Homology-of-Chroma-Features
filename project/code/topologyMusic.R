@@ -187,7 +187,12 @@ musicTopology <- function() {
     t = 1:nhz*cfftlen/4/sr 
     chromMatrix = matrix(hz, t)
     pers <- ripsDiag(X = chromMatrix, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
-    write.csv(pers, row.names = FALSE, file = paste("./output/persDiag/",paste("_MillionSongSubset_data_",h5Files[s],sep=""),".csv",sep=""))
+    # Write to file. Create directory if does not 
+    # exist then write file
+    # regEx manipulation to reverse file name path, remove file name, reverse again for only path
+    pathTo <- dirname(h5Files[s])
+    dir.create(paste(getwd(),"/output/persDiag/",pathTo,sep=""), showWarnings =FALSE, recursive = TRUE)
+    write.csv(pers, row.names = FALSE, file = paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep=""))
     persChromaSongs[[s]] = pers
   }
   print(persChromaSongs)
