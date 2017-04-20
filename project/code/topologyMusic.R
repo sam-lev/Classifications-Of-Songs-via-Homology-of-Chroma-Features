@@ -146,27 +146,51 @@ musicTopology <- function() {
  # Here we list all h5 files in a folder, calculate the persistant homology for each
  # song and add the corresponding diagram to 'persChromaSongs' and each songs chromatic
  # features to 'chromaFeatures'
-
- h5Files = list.files("./MillionSongSubset/data/A/R/R/" , pattern = ".h5", all.files = TRUE)
- chromaFeatures = vector("list", length(h5Files)) #rep(NA, length(h5Files))
- persChromaSongs = vector("list", length(h5Files)) #rep(NA, length(h5Files))
- songData = vector("list", length(h5Files))
- song1 = h5file(paste("./MillionSongSubset/data/A/R/R/",h5Files[1],sep=""), mode = "a")
- for( s in 1:length(h5Files)){
-   song = h5file(paste("./MillionSongSubset/data/A/R/R/", h5Files[s],sep=""), mode = "a")
-   songData[[s]] = song
-   chromaFeatures[[s]] = song["/analysis/segments_pitches"] 
-   hz = chromaFeatures[[s]][,1]
-   tone = chromaFeatures[[s]][1,]
-   ntone = ncol(chromaFeatures[[s]])
-   nhz = nrow(chromaFeatures[[s]])
-   sr = 2 #unsure about how to find sr 
-   t = 1:nhz*cfftlen/4/sr 
-   chromMatrix = matrix(hz, t)
-   pers <- ripsDiag(X = chromMatrix, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
-   persChromaSongs[[s]] = pers
- }
  
+ #h5Files = list.files(./MillionSongSubset/data/A/R/R/" , pattern = ".h5", all.files = TRUE)
+ #chromaFeatures = vector("list", length(h5Files)) #rep(NA, length(h5Files))
+ #persChromaSongs = vector("list", length(h5Files)) #rep(NA, length(h5Files))
+ #songData = vector("list", length(h5Files))
+ #song1 = h5file(paste("./MillionSongSubset/data/A/R/R/",h5Files[1],sep=""), mode = "a")
+ #for( s in 1:length(h5Files)){
+   #song = h5file(paste("./MillionSongSubset/data/A/R/R/", h5Files[s],sep=""), mode = "a")
+   #songData[[s]] = song
+   #chromaFeatures[[s]] = song["/analysis/segments_pitches"] 
+   #hz = chromaFeatures[[s]][,1]
+   #tone = chromaFeatures[[s]][1,]
+   #ntone = ncol(chromaFeatures[[s]])
+   #nhz = nrow(chromaFeatures[[s]])
+   #sr = 2 #unsure about how to find sr 
+   #t = 1:nhz*cfftlen/4/sr 
+   #chromMatrix = matrix(hz, t)
+   #pers <- ripsDiag(X = chromMatrix, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
+   #persChromaSongs[[s]] = pers
+ #}
+  
+  
+  #
+  # Use python to fins song titles.
+  #
+  h5Files = list.files("./MillionSongSubset/data/" , pattern = ".h5",recursive=TRUE, all.files = TRUE)
+  chromaFeatures = vector("list", length(h5Files)) #rep(NA, length(h5Files))
+  persChromaSongs = vector("list", length(h5Files)) #rep(NA, length(h5Files))
+  songData = vector("list", length(h5Files))
+  for( s in 1:length(h5Files)){
+    song = h5file(paste("./MillionSongSubset/data/",h5Files[s],sep=""), mode = "a")
+    songData[[s]] = song
+    chromaFeatures[[s]] = song["/analysis/segments_pitches"] 
+    hz = chromaFeatures[[s]][,1]
+    tone = chromaFeatures[[s]][1,]
+    ntone = ncol(chromaFeatures[[s]])
+    nhz = nrow(chromaFeatures[[s]])
+    sr = 2 #unsure about how to find sr 
+    t = 1:nhz*cfftlen/4/sr 
+    chromMatrix = matrix(hz, t)
+    pers <- ripsDiag(X = chromMatrix, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
+    write.csv(pers, row.names = FALSE, file = paste("./output/persDiag/",paste("_MillionSongSubset_data_",h5Files[s],sep=""),".csv",sep=""))
+    persChromaSongs[[s]] = pers
+  }
+  print(persChromaSongs)
  bottleneckSongs = matrix(1:length(persChromaSongs))
  firstSongPers = persChromaSongs[[1]]
  # Compute the bottleneck distance between persistant diagrams of first song
@@ -270,5 +294,58 @@ musicTopology <- function() {
      plot(x,y)
    }
  }
+ 
+ ################          
+ ###           ##
+ "    Zahra    "
+ ###           ##
+ ################
+ 
+ # SimpleKMeans au
+ library(RWeka)
+ 
+ nClusters <- 3
+ 
+ d= as.data.frame(persChromaSongs)
+ 
+ # SimpleKmeans with random initial cluster assignment
+ 
+ clusters <- SimpleKMeans(bottleneckSongs[-1], Weka_control(N=nClusters, init = 0, V=TRUE))
+ clusters
+ cbind(bottleneckSongs[-1],predict(clusters))
+ 
+ # SimpleKMeans with Kmeans++ initial cluster assignment
+ 
+ clusters <- SimpleKMeans(bottleneckSongs, Weka_control(N=nClusters, init=1,  V=TRUE))
+ clusters
+ predict(clusters)
+ 
+ # SimpleKmeans with Kmeans++ initial cluster assignment and "weka.core.Manhattandistance"
+ 
+ clusters <- SimpleKMeans(bottleneckSongs, Weka_control(N=nClusters, init=1, A="weka.core.ManhattanDistance", V=TRUE))
+ clusters
+ predict(clusters)
+ 
+ 
+ bottleneckMatrix= matrix(data=NA, nrow=length(persChromaSongs), ncol=length(persChromaSongs))
+ for(q in 1:length(persChromaSongs)){
+   for(p in 1:length(persChromaSongs)){
+     bottleneckMatrix[q,p] = bottleneck(persChromaSongs[[q]], persChromaSongs[[p]], dimension = 1)
+   }}
+ 
+ 
+ clusters <- SimpleKMeans(bottleneckMatrix, Weka_control(N=nClusters, init=1, A="weka.core.ManhattanDistance", V=TRUE))
+ clusters
+ predict(clusters)
+ 
+ 
+ ###K medoid clustering
+ clus <- cluster::pam(bottleneckMatrix, 3)
+ plot(bottleneckMatrix, xlab='', ylab='', axes=FALSE, xpd=NA,
+      cex=4, pch=as.character( clus$cluster ))
+ clus$clustering
+ box()
+ 
+ 
  
 }
