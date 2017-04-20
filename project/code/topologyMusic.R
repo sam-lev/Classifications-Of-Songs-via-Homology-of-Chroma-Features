@@ -189,10 +189,13 @@ musicTopology <- function() {
     pers <- ripsDiag(X = chromMatrix, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
     # Write to file. Create directory if does not 
     # exist then write file
-    # regEx manipulation to reverse file name path, remove file name, reverse again for only path
     pathTo <- dirname(h5Files[s])
+    if(!file.exists(paste(getwd(),"/output/persDiag/",pathTo,sep=""))){
     dir.create(paste(getwd(),"/output/persDiag/",pathTo,sep=""), showWarnings =FALSE, recursive = TRUE)
     write.csv(pers, row.names = FALSE, file = paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep=""))
+    close.connection(song)
+    }
+    closeAllConnections() 
     persChromaSongs[[s]] = pers
   }
   print(persChromaSongs)
