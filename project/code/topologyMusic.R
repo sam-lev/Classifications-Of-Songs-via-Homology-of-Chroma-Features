@@ -1,6 +1,6 @@
 musicTopology <- function() {
   
-  setwd( getwd() )
+  setwd( "/Users/multivax/Documents/PhD/2.spring.17/Classifications-Of-Songs-via-Homology-of-Chroma-Features/project/code/" )
   
   # must download h5 package for audio files
   if (!require(package = "h5")) {
@@ -142,77 +142,149 @@ musicTopology <- function() {
   print(max(qWassersteiDistances_similar))
   print(min(qWassersteiDistances_similar))
   
-  
+ h5close(song)
+ h5close(song2)
+ h5close(song3)
  # Here we list all h5 files in a folder, calculate the persistant homology for each
  # song and add the corresponding diagram to 'persChromaSongs' and each songs chromatic
  # features to 'chromaFeatures'
  
- #h5Files = list.files(./MillionSongSubset/data/A/R/R/" , pattern = ".h5", all.files = TRUE)
- #chromaFeatures = vector("list", length(h5Files)) #rep(NA, length(h5Files))
- #persChromaSongs = vector("list", length(h5Files)) #rep(NA, length(h5Files))
- #songData = vector("list", length(h5Files))
- #song1 = h5file(paste("./MillionSongSubset/data/A/R/R/",h5Files[1],sep=""), mode = "a")
- #for( s in 1:length(h5Files)){
-   #song = h5file(paste("./MillionSongSubset/data/A/R/R/", h5Files[s],sep=""), mode = "a")
-   #songData[[s]] = song
-   #chromaFeatures[[s]] = song["/analysis/segments_pitches"] 
-   #hz = chromaFeatures[[s]][,1]
-   #tone = chromaFeatures[[s]][1,]
-   #ntone = ncol(chromaFeatures[[s]])
-   #nhz = nrow(chromaFeatures[[s]])
-   #sr = 2 #unsure about how to find sr 
-   #t = 1:nhz*cfftlen/4/sr 
-   #chromMatrix = matrix(hz, t)
-   #pers <- ripsDiag(X = chromMatrix, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
-   #persChromaSongs[[s]] = pers
- #}
-  
-  
+ writeH5Persistence <- function(  ){
+   " Could be generalised later. Currently computes persistence 
+   diagrams of from all h5songs chroma features in MillionSongSubset 
+   and writes persistence diagrams to csv files under same folder
+   architecture in /output/perDiag/ as seen for h5 files. i.e.
+   if foobar.h5 is in MillionSongSubset/data/A/G/H/foobar.h5 then
+   function writes the persistence diagram of foobar.h5's chroma 
+   features to /output/persDiag/A/G/H/foobar.csv
+   "
+   
+   h5Files = list.files("./MillionSongSubset/data/" , pattern = ".h5",recursive=TRUE, all.files = TRUE)
+   chromaFeatures = vector("list", length(h5Files)) #rep(NA, length(h5Files))
+   persChromaSongs = vector("list", length(h5Files)) #rep(NA, length(h5Files))
+   songData = vector("list", length(h5Files))
+   for( s in 1:length(h5Files)){
+     if(!file.exists(paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep=""))){
+       song = h5file(paste("./MillionSongSubset/data/",h5Files[s],sep=""), mode = "a")
+       songData[[s]] = song
+       chromaFeatures[[s]] = song["/analysis/segments_pitches"] 
+       hz = chromaFeatures[[s]][,1]
+       tone = chromaFeatures[[s]][1,]
+       ntone = ncol(chromaFeatures[[s]])
+       nhz = nrow(chromaFeatures[[s]])
+       sr = 2 #unsure about how to find sr 
+       t = 1:nhz*cfftlen/4/sr 
+       chromMatrix = matrix(hz, t)
+       pers <- ripsDiag(X = chromMatrix, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
+       # Write to file. Create directory if does not 
+       # exist then write file
+       pathTo <- dirname(h5Files[s])
+       print(paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep=""))
+       #paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep="")
+       if(!file.exists(pathTo)){
+        dir.create(paste(getwd(),"/output/persDiag/",pathTo,sep=""), showWarnings =FALSE, recursive = TRUE)
+       }
+       print( paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep="") )
+       write.csv(pers, row.names = FALSE, file = paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep=""))
+       
+       persChromaSongs[[s]] = pers
+      }
+    }
+ }
+ 
+ readPersistenceCSV <- function( filePath){
+   " given the filePath in 'filePath' to the assumed csv file
+     the file is read in and returned as a matrix. 
+     Note: To plot the persistence diagram one must use  
+     plot.diagram() from the TDA package. Personal note, 
+     use 'band'= some_range_of_lifespan to explain plot
+     pink band along diaginal.
+   "
+  if(is.character(list.files(filePath))){
+      return(as.matrix(read.csv(filePath)))
+  }
+  else{
+      csvFiles <- list.files(filePath)
+      persistenceDiagrams <- vector("list", length(csvFiles))
+      for( f in 1:length(csvFiles)){
+        persistenceDiagrams[[f]] <- as.matrix(read.csv(csvFiles[f]))
+      }
+      return(persistenceDiagrams)
+   }
+ }
   #
   # Use python to fins song titles.
   #
-  h5Files = list.files("./MillionSongSubset/data/" , pattern = ".h5",recursive=TRUE, all.files = TRUE)
-  chromaFeatures = vector("list", length(h5Files)) #rep(NA, length(h5Files))
-  persChromaSongs = vector("list", length(h5Files)) #rep(NA, length(h5Files))
-  songData = vector("list", length(h5Files))
-  for( s in 1:length(h5Files)){
-    song = h5file(paste("./MillionSongSubset/data/",h5Files[s],sep=""), mode = "a")
-    songData[[s]] = song
-    chromaFeatures[[s]] = song["/analysis/segments_pitches"] 
-    hz = chromaFeatures[[s]][,1]
-    tone = chromaFeatures[[s]][1,]
-    ntone = ncol(chromaFeatures[[s]])
-    nhz = nrow(chromaFeatures[[s]])
-    sr = 2 #unsure about how to find sr 
-    t = 1:nhz*cfftlen/4/sr 
-    chromMatrix = matrix(hz, t)
-    pers <- ripsDiag(X = chromMatrix, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
-    # Write to file. Create directory if does not 
-    # exist then write file
-    pathTo <- dirname(h5Files[s])
-    if(!file.exists(paste(getwd(),"/output/persDiag/",pathTo,sep=""))){
-    dir.create(paste(getwd(),"/output/persDiag/",pathTo,sep=""), showWarnings =FALSE, recursive = TRUE)
-    write.csv(pers, row.names = FALSE, file = paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep=""))
-    close.connection(song)
+  print("writing csv files")
+  writeH5Persistence()
+  print("reading csv files")
+  
+  
+  pairwiseBottleneck <- function(read, matrixData, diags){
+    " Function computes the pairwise bottleneck distance between 
+    persistence diagrams. If read = True this function uses pairwisePersistence() 
+    function's output, i.e. reads from csv file 'pairwisePersistence.csv' 
+    to construct the matrix of pairwise persistence diagrams between songs
+    "
+    # computes pairwise bottleneck distance between
+    # all diagram elements stored to file whose
+    # pathnames are in the list 'read'
+    if(!missing(read)){
+      # Fill list of persistence diagrams from csv files
+      # under path 'read'
+      persistenceDiagrams = readPersistenceCSV(read)
+      
+      # Compute all pairwise persistence diagrams and store
+      # to matrix.
+      for( persDiag in persistenceDiagrams){
+        bottleneckMatrix= matrix(data=NA, nrow=length(persistenceDiagrams), ncol=length(persistenceDiagrams))
+        for(q in 1:length(persistenceDiagrams)){
+          for(p in 1:length(persistenceDiagrams)){
+            bottleneckMatrix[q,p] = bottleneck(persistenceDiagrams[[q]], persistenceDiagrams[[p]], dimension = 1)
+          }
+        }
+      }
+      return(bottleneckMatrix)
     }
-    closeAllConnections() 
-    persChromaSongs[[s]] = pers
+    # computes pairwise bottleneck distance between
+    # all diagram elements in diag
+    if(!missing(diags)){
+      for(pers in diags){
+        bottleneckMatrix= matrix(data=NA, nrow=length(diags), ncol=length(diags))
+        for(q in 1:length(diags)){
+          for(p in 1:length(diags)){
+            bottleneckMatrix[q,p] = bottleneck(diags[[q]], diags[[p]], dimension = 1)
+          }
+        }
+      }
+      return(bottleneckMatrix)
+    }
+    # computes pairwise bottleneck distance between
+    # all matrix data elements in matrixData, i.e.
+    # matrixData assumed to be point cloud.
+    if(!missing(matrixData)){
+      persistenceDiagrams= matrix(data=NA, nrow=length(matrixData), ncol=length(matrixData))
+      for( pc in 1:length(matrixData)){
+        persistenceDiagrams[[pc]] = ripsDiag(matrixData[[pc]], maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
+      }
+      bottleneckMatrix= matrix(data=NA, nrow=length(persistenceDiagrams), ncol=length(persistenceDiagrams))
+      for(q in 1:length(persistenceDiagrams)){
+        for(p in 1:length(persistenceDiagrams)){
+          bottleneckMatrix[q,p] = bottleneck(persistenceDiagrams[[q]], persistenceDiagrams[[p]], dimension = 1)
+        }
+      }
+    }
+    
   }
-  print(persChromaSongs)
- bottleneckSongs = matrix(1:length(persChromaSongs))
- firstSongPers = persChromaSongs[[1]]
- # Compute the bottleneck distance between persistant diagrams of first song
- # in folder and all other songs. Eventually need to compute all bottleneck
- # distance between persistence diagrams, i.e. if n songs in folder 
- # then compute n! persistence diagrams to determine nearly topologically equivalent 
- # songs. 
- for(p in 1:length(persChromaSongs)){
-   bottleneckSongs[p] = bottleneck(firstSongPers, persChromaSongs[[p]], dimension = 1)
- }
- # Obtain the index of the persistance diagram affording the 
- # minimal bottleneck distance other than song itself. The index
- # correlating to minimal bottleneck distance also correlates to 
- # the song most similar in persistant homology and by ouy hypothsis
+  " form list of all persistence diagrams."
+  persChromaSongs <- readPersistenceCSV(paste(getwd(),"/output/persDiag/",sep=""))
+  
+
+
+   # Obtain the index of the persistance diagram affording the 
+   # minimal bottleneck distance other than song itself. The index
+   # correlating to minimal bottleneck distance also correlates to 
+   # the song most similar in persistant homology and by ouy hypothsis
  # similar in musical composition.
  minBtl = min(bottleneckSongs[(2:length(bottleneckSongs))])
  # index of song nearest in persistence to first song
@@ -226,60 +298,7 @@ musicTopology <- function() {
  # I want to hear it!
  #print(h5attr(songData[[simSong]],"TITLE"))
  
- pairwisePersistence < function(args , write , fromFolders){
-   " Returns the pairwise persistence diagrams between 
-    all elements in 'args' as a list if 'write' is missing.
-    Otherwise, if 'fromFolders' is missing and 'write' is TRUE 
-    then computes the pairwise persistence diagrams of all 
-    elements in args and writes it to 'pairwisePersistence.csv' 
-    by default or as 'fileName.csv' if file name specified as 
-    string in 'fileName' "
-   if(!missing(write) & !missing(args) | write == TRUE & !missing(args)){
-     #write to csv file pairwise distance of all elements in 'args'
-     
-     if(!missing(fileName)){
-       # write to specified filename
-       
-       #write.csv(dataFrame, row.names = FALSE, file = paste("output/",fileName,".csv",sep=""))
-     }
-     else{
-       #write.csv(dataFrame, row.names = FALSE, file = "output/pairwisePersistence.csv")
-     }
-   }
-   if(!missing(write) & !missing(fromFolders) | write == TRUE & !missing(fromFolders)){
-     # write to csv file pairwise distance between all data files
-     # recursively for all data files in folders specified 
-     # by 'fromFolders'
-   }
-   else{
-     pairwisePersistence <- c()
-     
-     return(pairwisePersistence)
-   }
- }
- pairwiseBottleneck <- function(read, matrixData, diags){
- " Function computes the pairwise bottleneck distance between 
-   persistence diagrams. If read = True this function uses pairwisePersistence() 
-   function's output, i.e. reads from csv file 'pairwisePersistence.csv' 
-   to construct the matrix of pairwise persistence diagrams between songs
- "
-   # computes pairwise bottleneck distance between
-   # all diagram elements stored to file 'read'
-   if(!missing(read)){
-     
-   }
-   # computes pairwise bottleneck distance between
-   # all diagram elements in diag
-   if(!missing(diags)){
-     
-   }
-   # computes pairwise bottleneck distance between
-   # all matrix data elements in natrixData
-   if(!missing(matrixData)){
-     
-   }
- 
- }
+
  
  topomdscale <- function(bottleneck,pwasserstein, p, fromFile){
    " Performs Topological Multi-Dimensional Scaling between 
@@ -302,6 +321,9 @@ musicTopology <- function() {
      plot(x,y)
    }
  }
+ 
+
+   
  
  ################          
  ###           ##
