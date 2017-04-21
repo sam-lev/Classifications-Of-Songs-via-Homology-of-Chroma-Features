@@ -220,7 +220,7 @@ musicTopology <- function() {
   print("reading csv files")
   
   
-  pairwiseBottleneck <- function(read, matrixData, diags){
+  pairwiseBottleneck <- function(read, matrixData, diags, write){
     " Function computes the pairwise bottleneck distance between 
     persistence diagrams. If read = True this function uses pairwisePersistence() 
     function's output, i.e. reads from csv file 'pairwisePersistence.csv' 
@@ -236,26 +236,28 @@ musicTopology <- function() {
       
       # Compute all pairwise persistence diagrams and store
       # to matrix.
-      for( persDiag in persistenceDiagrams){
         bottleneckMatrix= matrix(data=NA, nrow=length(persistenceDiagrams), ncol=length(persistenceDiagrams))
         for(q in 1:length(persistenceDiagrams)){
           for(p in 1:length(persistenceDiagrams)){
             bottleneckMatrix[q,p] = bottleneck(persistenceDiagrams[[q]], persistenceDiagrams[[p]], dimension = 1)
           }
         }
-      }
+        if(!missing(write)){
+          write.csv(bottleneckMatrix, row.names = FALSE, file = paste(getwd(),"/output/",write,".csv",sep=""))
+        }
       return(bottleneckMatrix)
     }
     # computes pairwise bottleneck distance between
     # all diagram elements in diag
     if(!missing(diags)){
-      for(pers in diags){
         bottleneckMatrix= matrix(data=NA, nrow=length(diags), ncol=length(diags))
         for(q in 1:length(diags)){
           for(p in 1:length(diags)){
             bottleneckMatrix[q,p] = bottleneck(diags[[q]], diags[[p]], dimension = 1)
           }
         }
+      if(!missing(write)){
+          write.csv(bottleneckMatrix, row.names = FALSE, file = paste(getwd(),"/output/",write,".csv",sep=""))
       }
       return(bottleneckMatrix)
     }
@@ -273,11 +275,17 @@ musicTopology <- function() {
           bottleneckMatrix[q,p] = bottleneck(persistenceDiagrams[[q]], persistenceDiagrams[[p]], dimension = 1)
         }
       }
-      return(persistenceDiagrams)
+      if(!missing(write)){
+        write.csv(bottleneckMatrix, row.names = FALSE, file = paste(getwd(),"/output/",write,".csv",sep=""))
+      }
+      return(bottleneckMatrix)
     }
     
   }
+  
+  ""
   " form list of all persistence diagrams."
+  ""
   persChromaSongs <- readPersistenceCSV(paste(getwd(),"/output/persDiag/",sep=""))
   
 
