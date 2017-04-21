@@ -273,6 +273,7 @@ musicTopology <- function() {
           bottleneckMatrix[q,p] = bottleneck(persistenceDiagrams[[q]], persistenceDiagrams[[p]], dimension = 1)
         }
       }
+      return(persistenceDiagrams)
     }
     
   }
