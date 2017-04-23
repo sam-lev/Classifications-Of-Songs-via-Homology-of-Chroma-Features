@@ -240,7 +240,7 @@ musicTopology <- function() {
 } #End musicTopology()
 
 
-pairwiseBottleneck <- function(fromDirPath, matrixData, diags, write){
+pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
   " Function computes the pairwise bottleneck distance between 
   persistence diagrams. If 'fromDirPath is present this function uses 
   readPersistenceCSV(fromDirPath) function's output, i.e. reads from csv 
@@ -272,11 +272,11 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, diags, write){
   }
   # computes pairwise bottleneck distance between
   # all diagram elements in diag
-  if(!missing(diags)){
-    bottleneckMatrix= matrix(data=NA, nrow=length(diags), ncol=length(diags))
-    for(q in 1:length(diags)){
-      for(p in 1:length(diags)){
-        bottleneckMatrix[q,p] = bottleneck(diags[[q]], diags[[p]], dimension = 1)
+  if(!missing(persDiags)){
+    bottleneckMatrix= matrix(data=NA, nrow=length(persDiags), ncol=length(persDiags))
+    for(q in 1:length(persDiags)){
+      for(p in 1:length(persDiags)){
+        bottleneckMatrix[q,p] = bottleneck(persDiags[[q]], persDiags[[p]], dimension = 1)
       }
     }
     if(!missing(write)){
@@ -287,6 +287,7 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, diags, write){
   # computes pairwise bottleneck distance between
   # all matrix data elements in matrixData, i.e.
   # matrixData assumed to be point cloud.
+  # matrixData is of the form [ [dataset 1], [dataset 2], ...]
   if(!missing(matrixData)){
     persistenceDiagrams= matrix(data=NA, nrow=length(matrixData), ncol=length(matrixData))
     for( pc in 1:length(matrixData)){
