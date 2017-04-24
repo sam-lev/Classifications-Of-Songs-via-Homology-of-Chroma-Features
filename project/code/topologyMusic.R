@@ -374,7 +374,6 @@ readPersistenceCSV <- function( filePath, dirPath){
   }
 }
 
-
 topomdscale <- function(bottleneck, pwasserstein, p, fromFile){
   " Performs Topological Multi-Dimensional Scaling between 
      the distance structure of pairwise bottleneck distances
