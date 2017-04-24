@@ -381,7 +381,10 @@ topomdscale <- function(bottleneck, pwasserstein, p, fromFile){
      as provided by 'bottleneck' or the distance structure 'pwasserstein'
      using p-wasserstein distances with p given by argument 'p'.
      If 'fromFile' is provided csv file specified by fromFile is 
-     read as the distance structure to be used."
+     read as the distance structure to be used.
+    Takes the pairwise distance matrix as and attempts to embed 
+    it isometrically in Euclidean space with minimum distortion 
+    of the metric."
   if (!require(package = "stats")) {
     install.packages("stats")
   }
