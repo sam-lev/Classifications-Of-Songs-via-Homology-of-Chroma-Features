@@ -1,3 +1,12 @@
+" This work was created by Samuel Leventhal and Zahra Fahimar and 
+licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives
+4.0 International License. The following uses chroma features of musical
+compositions to extract homological features through persistence allowing
+song classifaction through topological metrics such as bottleneck distance 
+and p-Wasserstein via clustering and multi-dimensional scaling"
+
+
+
 musicTopology <- function() {
   
   # must download h5 package for audio files
