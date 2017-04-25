@@ -267,6 +267,20 @@
   \item Questions to address in write-up: what space does my data lie in, what is a notion of distance /similarity in that space, what is the shape structure of my data within that space, hoe are key variables of interest distributed across this ``shape'', what toililicical/geometric summaries are usefull. Persistence homology:list of homolofies, Mapper: nerve of data and cluster of nerves.
   \item can we use k-meands or k-nearest neighbors of persistence diagrams in order to cluster? other clustering techniques?
   \item Can we say chroma features are our form of sparcification to extrapolate key homological features?
+  \item option for clustering:
+    \begin{enumerate}
+    \item Find max and minimum bottleneck distances between songs to determine range.
+    \item Divide that interval into however many clusters desired
+    \item Group all songs whose pairwise distances are within the previously found interval ranges.
+    \end{enumerate}
+    Available clustering techniques
+    \begin{enumerate}
+    \item Simple K means
+    \item K-Medoid clustering
+    \item Multi-Dimensional Scaling
+    \item Use mult-dimensional scaling as input for other clustering techniques. 
+    \end{enumerate}
+  \item Need to identify song names and genre as well as after clustering. We will then listen in comparison as well as, and more importantly, look at which genre's are contained in each cluster as a quality measure of using persistence for clustering audo files.
   \end{itemize}
   
 \end{document}
