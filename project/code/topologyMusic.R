@@ -30,6 +30,10 @@ musicTopology <- function() {
   }
   library("stats")
   
+  if(!require(package = "rPython")){
+    install.packages("rPython")
+  }
+  library("rPython")
   # connect to the sqlite file
   song = h5file("./MillionSongSubset/data/B/B/B/TRBBBFO128F931535D.h5", mode = "a")
   song2 = h5file("./MillionSongSubset/data/A/R/R/TRARRWA128F42A0195.h5", mode = "a")
@@ -192,57 +196,6 @@ musicTopology <- function() {
  
 
    
- 
- ################          
- ###           ##
- "    Zahra    "
- ###           ##
- ################
- 
- # SimpleKMeans au
- library(RWeka)
- 
- nClusters <- 3
- 
- d= as.data.frame(persChromaSongs)
- 
- # SimpleKmeans with random initial cluster assignment
- 
- clusters <- SimpleKMeans(bottleneckSongs[-1], Weka_control(N=nClusters, init = 0, V=TRUE))
- clusters
- cbind(bottleneckSongs[-1],predict(clusters))
- 
- # SimpleKMeans with Kmeans++ initial cluster assignment
- 
- clusters <- SimpleKMeans(bottleneckSongs, Weka_control(N=nClusters, init=1,  V=TRUE))
- clusters
- predict(clusters)
- 
- # SimpleKmeans with Kmeans++ initial cluster assignment and "weka.core.Manhattandistance"
- 
- clusters <- SimpleKMeans(bottleneckSongs, Weka_control(N=nClusters, init=1, A="weka.core.ManhattanDistance", V=TRUE))
- clusters
- predict(clusters)
- 
- 
- bottleneckMatrix= matrix(data=NA, nrow=length(persChromaSongs), ncol=length(persChromaSongs))
- for(q in 1:length(persChromaSongs)){
-   for(p in 1:length(persChromaSongs)){
-     bottleneckMatrix[q,p] = bottleneck(persChromaSongs[[q]], persChromaSongs[[p]], dimension = 1)
-   }}
- 
- 
- clusters <- SimpleKMeans(bottleneckMatrix, Weka_control(N=nClusters, init=1, A="weka.core.ManhattanDistance", V=TRUE))
- clusters
- predict(clusters)
- 
- 
- ###K medoid clustering
- clus <- cluster::pam(bottleneckMatrix, 3)
- plot(bottleneckMatrix, xlab='', ylab='', axes=FALSE, xpd=NA,
-      cex=4, pch=as.character( clus$cluster ))
- clus$clustering
- box()
  
  
  
@@ -407,4 +360,63 @@ topomdscale <- function(bottleneck, pwasserstein, p, fromFile){
     
     plot(x,y)
   }
+}
+
+twelveBarBluesComposition <- function(){
+  "The function uses the persistence diagram of a 12-bar blues
+   musical composition which is unique to a small subset of songs 
+   to compare to other songs in order to identify which songs, as 
+   found in comparison between homological features of the 12-bar 
+   structure, also contain a 12-bar blues composition.
+  "
+  
+}
+kmeansPersistence <- function( persChromaSong){
+  
+  
+  # SimpleKMeans au
+  library(RWeka)
+  
+  nClusters <- 3
+  
+  d= as.data.frame(persChromaSongs)
+  
+  # SimpleKmeans with random initial cluster assignment
+  
+  clusters <- SimpleKMeans(bottleneckSongs[-1], Weka_control(N=nClusters, init = 0, V=TRUE))
+  clusters
+  cbind(bottleneckSongs[-1],predict(clusters))
+  
+  # SimpleKMeans with Kmeans++ initial cluster assignment
+  
+  clusters <- SimpleKMeans(bottleneckSongs, Weka_control(N=nClusters, init=1,  V=TRUE))
+  clusters
+  predict(clusters)
+  
+  # SimpleKmeans with Kmeans++ initial cluster assignment and "weka.core.Manhattandistance"
+  
+  clusters <- SimpleKMeans(bottleneckSongs, Weka_control(N=nClusters, init=1, A="weka.core.ManhattanDistance", V=TRUE))
+  clusters
+  predict(clusters)
+  
+  
+  bottleneckMatrix= matrix(data=NA, nrow=length(persChromaSongs), ncol=length(persChromaSongs))
+  for(q in 1:length(persChromaSongs)){
+    for(p in 1:length(persChromaSongs)){
+      bottleneckMatrix[q,p] = bottleneck(persChromaSongs[[q]], persChromaSongs[[p]], dimension = 1)
+    }}
+  
+  
+  clusters <- SimpleKMeans(bottleneckMatrix, Weka_control(N=nClusters, init=1, A="weka.core.ManhattanDistance", V=TRUE))
+  clusters
+  predict(clusters)
+  
+  
+  ###K medoid clustering
+  clus <- cluster::pam(bottleneckMatrix, 3)
+  plot(bottleneckMatrix, xlab='', ylab='', axes=FALSE, xpd=NA,
+       cex=4, pch=as.character( clus$cluster ))
+  clus$clustering
+  box()
+  
 }
