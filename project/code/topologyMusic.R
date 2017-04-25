@@ -384,7 +384,7 @@ topomdscale <- function(bottleneck, pwasserstein, p, fromFile){
      read as the distance structure to be used.
     Takes the pairwise distance matrix as and attempts to embed 
     it isometrically in Euclidean space with minimum distortion 
-    of the metric."
+    of the metric. "
   if (!require(package = "stats")) {
     install.packages("stats")
   }
