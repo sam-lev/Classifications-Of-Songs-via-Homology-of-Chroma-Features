@@ -191,13 +191,6 @@ musicTopology <- function() {
  # I want to hear it!
  #print(h5attr(songData[[simSong]],"TITLE"))
  
-
-
- 
-
-   
- 
- 
  
 } #End musicTopology()
 
@@ -371,6 +364,8 @@ twelveBarBluesComposition <- function(){
   "
   
 }
+
+
 kmeansPersistence <- function( persChromaSong){
   
   
@@ -418,5 +413,15 @@ kmeansPersistence <- function( persChromaSong){
        cex=4, pch=as.character( clus$cluster ))
   clus$clustering
   box()
+  
+}
+
+pyFeatureExtraction <- function(){
+  if(!require(package = "rPython")){
+    install.packages("rPython")
+  }
+  library(rPython)
+  
+  # python.load("featureExtraction.py")
   
 }
