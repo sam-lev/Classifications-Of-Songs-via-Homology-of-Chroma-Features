@@ -58,4 +58,10 @@ def findArtist(artist, title):
     h5.close()
 
 #findArtist("Son House", "Death Letter Blues")
-print(allSongDir)
+allH5 = []
+for songDir in allSongDir:
+    for h5File in [h5 for h5 in os.listdir( songDir ) if h5.endswith(".h5")]:
+        allH5.append(h5File)
+DeathLetterBlues = [sonHouse for sonHouse in allH5 if sonHouse.startswith("TRGCDIW128EF33E1E9") or sonHouse.startsWith(" TRHXYYB128F42795C6") or sonHouse.startsWith("TRRWDSF128F426CCFD") or sonHouse.startsWith("TRRRFYZ128F92EAB74")]
+
+print(DeathLetterBlues)
