@@ -203,6 +203,8 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
   persistence diagrams between songs 
   If write is present it must be a string consisting of the desired 
   file name to write the matrix of pairwise bottleneck distances to.
+
+  e.g. pairwiseBottleneck(fromDirPath = paste(getwd(), '/output/persDiag/A/A/A/',sep=''))
   "
   if (!require(package = "TDA")) {
     install.packages("TDA")
