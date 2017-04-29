@@ -416,12 +416,37 @@ kmeansPersistence <- function( persChromaSong){
   
 }
 
-pyFeatureExtraction <- function(){
+pyFeatureExtraction <- function(filePath){
   if(!require(package = "rPython")){
     install.packages("rPython")
   }
   library(rPython)
   
-  # python.load("featureExtraction.py")
+  if(FALSE){
+  python.load("featureExtraction.py")
+
+  python.assign("filePath", filePath)
+  python.exec("h5 = h5get.open_h5_file_read(filePath)")
+  python.exec("duration = h5get.get_duration(h5)")
+  python.exec("sampleRate = h5get.get_analysis_sample_rate(h5)")
+  python.exec("artist = h5get.get_artist_name(h5)")
+  python.exec("title = h5get.get_title(h5)")
+  python.exec("trackID = h5get.get_track_id(h5)")
+  python.exec("chromaFeatures = h5get.get_segments_pitches(h5)")
+  python.exec("timbre = h5get.get_segments_timbre(h5)")
+  python.exec("similarArtists = h5get.get_similar_artists(h5)")
+  python.exec("md5 = h5get.get_audio_md5(h5)")
+  python.exec("h5.close()")
+  
+  artist <- python.get("artist")
+  title <- python.get("title")
+  trackID <- python.get("trackID")
+  sampleRate <- python.get("sampleRate")
+  similarArtists <- python.get("similarArtists")
+  md5Hash <- python.get("md5")
+  
+  print(artist)
+  print(title)
+  }
   
 }
