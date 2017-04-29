@@ -362,7 +362,10 @@ twelveBarBluesComposition <- function(){
    found in comparison between homological features of the 12-bar 
    structure, also contain a 12-bar blues composition.
   "
-  
+  "
+    As the base song to find other 12-Bar blues we use 
+    Death Letter Blues by Son House
+  "
 }
 
 
@@ -421,12 +424,14 @@ pyFeatureExtraction <- function(filePath){
     install.packages("rPython")
   }
   library(rPython)
-  
-  if(FALSE){
-  python.load("featureExtraction.py")
 
+  pathPyScript = paste(getwd(),"/hd5Python/PythonSrc/featureExtraction.py",sep="")
+  Sys.setenv(PATH = paste('/Users/multivax/anaconda/bin/python', Sys.getenv("PATH"),sep=":"))
+  system( paste('/Users/multivax/anaconda/bin/python ', pathPyScript,sep=""))
+  
+  python.load("featureExtraction.py")
   python.assign("filePath", filePath)
-  python.exec("h5 = h5get.open_h5_file_read(filePath)")
+  python.exec(paste("h5 = h5get.open_h5_file_read(filepath)",sep=""))
   python.exec("duration = h5get.get_duration(h5)")
   python.exec("sampleRate = h5get.get_analysis_sample_rate(h5)")
   python.exec("artist = h5get.get_artist_name(h5)")
@@ -447,6 +452,6 @@ pyFeatureExtraction <- function(filePath){
   
   print(artist)
   print(title)
-  }
+  
   
 }
