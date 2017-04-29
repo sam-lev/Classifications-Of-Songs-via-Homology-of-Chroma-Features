@@ -204,13 +204,19 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
   If write is present it must be a string consisting of the desired 
   file name to write the matrix of pairwise bottleneck distances to.
   "
+  if (!require(package = "TDA")) {
+    install.packages("TDA")
+  }
+  library("TDA")
   # computes pairwise bottleneck distance between
   # all diagram elements stored to file whose
   # pathnames are in the list 'fromDirPath'
   if(!missing(fromDirPath)){
     # Fill list of persistence diagrams from csv files
     # under path 'fromDirPath'
-    persistenceDiagrams = readPersistenceCSV(dirPath = fromDirPath)
+    persistenceData = readPersistenceCSV(dirPath = fromDirPath, songNames= TRUE)
+    songNames = persistenceData$songNames
+    persistenceDiagrams = persistenceData$diagrams
     
     # Compute all pairwise persistence diagrams and store
     # to matrix.
@@ -220,6 +226,7 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
         bottleneckMatrix[q,p] = bottleneck(persistenceDiagrams[[q]], persistenceDiagrams[[p]], dimension = 1)
       }
     }
+    rownames(bottleneckMatrix) <- paste(songNames)
     if(!missing(write)){
       write.csv(bottleneckMatrix, row.names = FALSE, file = paste(getwd(),"/output/",write,".csv",sep=""))
     }
@@ -309,7 +316,7 @@ writeH5Persistence <- function(  ){
 
 
 
-readPersistenceCSV <- function( filePath, dirPath){
+readPersistenceCSV <- function( filePath, dirPath, songNames = FALSE){
   " given the filePath in 'filePath' to the assumed csv file
      the file is read in and returned as a matrix. 
      Note: To plot the persistence diagram one must use  
@@ -323,10 +330,16 @@ readPersistenceCSV <- function( filePath, dirPath){
   if(!missing(dirPath)){
     csvFiles <- list.files(dirPath)
     persistenceDiagrams <- vector("list", length(csvFiles))
+
     for( f in 1:length(csvFiles)){
       persistenceDiagrams[[f]] <- as.matrix(read.csv(paste(dirPath,csvFiles[f],sep="")))
+      csvFiles[f] = gsub('.{4}$', '', csvFiles[f])
     }
-    return(persistenceDiagrams)
+    if(!songNames){
+      return(persistenceDiagrams)
+    }else{
+      return(c("diagrams"= persistenceDiagrams, "songNames" = csvFiles))
+    }
   }
 }
 
