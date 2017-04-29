@@ -217,7 +217,7 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
     persistenceData = readPersistenceCSV(dirPath = fromDirPath, songNames= TRUE)
     songNames = persistenceData$songNames
     persistenceDiagrams = persistenceData$diagrams
-    
+    print(persistenceDiagrams)
     # Compute all pairwise persistence diagrams and store
     # to matrix.
     bottleneckMatrix= matrix(data=NA, nrow=length(persistenceDiagrams), ncol=length(persistenceDiagrams))
@@ -226,7 +226,13 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
         bottleneckMatrix[q,p] = bottleneck(persistenceDiagrams[[q]], persistenceDiagrams[[p]], dimension = 1)
       }
     }
+    # Label the bottleneck matrix X and Y axis to be that 
+    # of the .h5 files i.e. (foo, bar) corresponds to 
+    # the index of bottleneck distances from persistence diagrams
+    # of foo.h5 and bar.h5
     rownames(bottleneckMatrix) <- paste(songNames)
+    colnames(bottleneckMatrix) <- paste(songNames)
+    
     if(!missing(write)){
       write.csv(bottleneckMatrix, row.names = FALSE, file = paste(getwd(),"/output/",write,".csv",sep=""))
     }
@@ -328,7 +334,7 @@ readPersistenceCSV <- function( filePath, dirPath, songNames = FALSE){
     return(as.matrix(read.csv(filePath)))
   }
   if(!missing(dirPath)){
-    csvFiles <- list.files(dirPath)
+    csvFiles <- list.files( dirPath, pattern = ".csv",recursive=TRUE, all.files = TRUE )
     persistenceDiagrams <- vector("list", length(csvFiles))
 
     for( f in 1:length(csvFiles)){
@@ -338,7 +344,7 @@ readPersistenceCSV <- function( filePath, dirPath, songNames = FALSE){
     if(!songNames){
       return(persistenceDiagrams)
     }else{
-      return(c("diagrams"= persistenceDiagrams, "songNames" = csvFiles))
+      return(list(diagrams = persistenceDiagrams, songNames = csvFiles))
     }
   }
 }

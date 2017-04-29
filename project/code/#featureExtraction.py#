@@ -58,4 +58,4 @@ def findArtist(artist, title):
     h5.close()
 
 #findArtist("Son House", "Death Letter Blues")
-print(allSongDir)
+print(os.listdir( songDir ))
