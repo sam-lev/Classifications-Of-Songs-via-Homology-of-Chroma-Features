@@ -204,7 +204,7 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
   If write is present it must be a string consisting of the desired 
   file name to write the matrix of pairwise bottleneck distances to.
 
-  e.g. pairwiseBottleneck(fromDirPath = paste(getwd(), '/output/persDiag/A/A/A/',sep=''))
+  e.g. pairwiseBottleneck(fromDirPath = paste(getwd(), '/output/persDiag/A/A/A/',sep='') )
   "
   if (!require(package = "TDA")) {
     install.packages("TDA")
@@ -219,13 +219,13 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
     persistenceData = readPersistenceCSV(dirPath = fromDirPath, songNames= TRUE)
     songNames = persistenceData$songNames
     persistenceDiagrams = persistenceData$diagrams
-    
     # Compute all pairwise persistence diagrams and store
     # to matrix.
     bottleneckMatrix= matrix(data=NA, nrow=length(persistenceDiagrams), ncol=length(persistenceDiagrams))
     for(q in 1:length(persistenceDiagrams)){
       for(p in 1:length(persistenceDiagrams)){
-        bottleneckMatrix[q,p] = bottleneck(persistenceDiagrams[[q]], persistenceDiagrams[[p]], dimension = 1)
+        bdist = bottleneck(persistenceDiagrams[[q]], persistenceDiagrams[[p]], dimension = 1)
+        bottleneckMatrix[q,p] = bdist
       }
     }
     # Label the bottleneck matrix X and Y axis to be that 
@@ -280,7 +280,7 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
 
 
 writeH5Persistence <- function(  ){
-  " Could be generalised later. Currently computes persistence 
+  "Computes persistence 
   diagrams of from all h5songs chroma features in MillionSongSubset 
   and writes persistence diagrams to csv files under same folder
   architecture in /output/perDiag/ as seen for h5 files. i.e.
@@ -288,21 +288,32 @@ writeH5Persistence <- function(  ){
   function writes the persistence diagram of foobar.h5's chroma 
   features to /output/persDiag/A/G/H/foobar.csv
   "
+  if (!require(package = "h5")) {
+    install.packages("h5")
+  }
+  library("h5")
   
-  h5Files = list.files("./MillionSongSubset/data/" , pattern = ".h5",recursive=TRUE, all.files = TRUE)
+  if (!require(package = "TDA")) {
+    install.packages("TDA")
+  }
+  library("TDA")
+  
+  dirName <- "./MillionSongSubset/data/"
+  h5Files = list.files(dirName , pattern = ".h5",recursive=TRUE, all.files = TRUE)
   chromaFeatures = vector("list", length(h5Files)) #rep(NA, length(h5Files))
   persChromaSongs = vector("list", length(h5Files)) #rep(NA, length(h5Files))
   songData = vector("list", length(h5Files))
   for( s in 1:length(h5Files)){
     if(!file.exists(paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep=""))){
-      song = h5file(paste("./MillionSongSubset/data/",h5Files[s],sep=""), mode = "a")
+      song = h5file(paste( dirName ,h5Files[s],sep=""), mode = "a")
       songData[[s]] = song
       chromaFeatures[[s]] = song["/analysis/segments_pitches"] 
       hz = chromaFeatures[[s]][,1]
       tone = chromaFeatures[[s]][1,]
       ntone = ncol(chromaFeatures[[s]])
       nhz = nrow(chromaFeatures[[s]])
-      sr = 2 #unsure about how to find sr 
+      sr = 2 #unsure about how to find sr found out it 2205 or something
+      cfftlen = 2048
       t = 1:nhz*cfftlen/4/sr 
       chromMatrix = matrix(hz, t)
       pers <- ripsDiag(X = chromMatrix, maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
@@ -331,6 +342,10 @@ readPersistenceCSV <- function( filePath, dirPath, songNames = FALSE){
      plot.diagram() from the TDA package. Personal note, 
      use 'band'= some_range_of_lifespan to explain plot
      pink band along diaginal.
+
+    e.g. sonHousePreachin <- readPersistenceCSV(filePath=paste(getwd(),
+          '/output/persDiag/sonHouse/TRYUOOZ128F427E839.csv',sep=''))
+        plot.diagram(sonHousePreachin)
    "
   if(!missing(filePath)){
     return(as.matrix(read.csv(filePath)))
@@ -340,7 +355,7 @@ readPersistenceCSV <- function( filePath, dirPath, songNames = FALSE){
     persistenceDiagrams <- vector("list", length(csvFiles))
 
     for( f in 1:length(csvFiles)){
-      persistenceDiagrams[[f]] <- as.matrix(read.csv(paste(dirPath,csvFiles[f],sep="")))
+      persistenceDiagrams[[f]] <- as.matrix(read.csv( paste(dirPath,csvFiles[f],sep="") ))
       csvFiles[f] = gsub('.{4}$', '', basename(csvFiles[f])) #csvFiles[f])
     }
     if(!songNames){
@@ -440,3 +455,19 @@ kmeansPersistence <- function( persChromaSong){
   
 }
 
+cleanPersCSV <- function(dirPath){
+  problemExample <- "/Users/multivax/Documents/PhD/2.spring.17/Classifications-Of-Songs-via-Homology-of-Chroma-Features/project/code/output/persDiag/"
+  csvFiles <- list.files( paste(problemExample,dirPath, sep=""), pattern = ".csv",recursive=TRUE, all.files = TRUE )
+  persistenceDiagrams <- vector("list", length(csvFiles))
+  
+  for( f in 1:length(csvFiles)){
+    problemCSV <- readPersistenceCSV(paste(problemExample, csvFiles[f],sep=""))
+    if(ncol(problemCSV) == 4){
+      #reformat
+      fileName <- basename(csvFiles[f])
+      fixedCSV <- problemCSV[,-1]
+      write.csv(fixedCSV,file=paste(problemExample,fileName,sep=""),row.names=FALSE, append=FALSE)
+    }
+  }
+
+}
