@@ -236,7 +236,7 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
     colnames(bottleneckMatrix) <- paste(songNames)
     
     if(!missing(write)){
-      write.csv(bottleneckMatrix, row.names = FALSE, file = paste(getwd(),"/output/",write,".csv",sep=""))
+      write.csv(bottleneckMatrix, row.names = TRUE, file = paste(getwd(),"/output/",write,".csv",sep=""))
     }
     return(bottleneckMatrix)
   }
@@ -250,7 +250,7 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
       }
     }
     if(!missing(write)){
-      write.csv(bottleneckMatrix, row.names = FALSE, file = paste(getwd(),"/output/",write,".csv",sep=""))
+      write.csv(bottleneckMatrix, row.names = TRUE, file = paste(getwd(),"/output/",write,".csv",sep=""))
     }
     return(bottleneckMatrix)
   }
@@ -440,39 +440,3 @@ kmeansPersistence <- function( persChromaSong){
   
 }
 
-pyFeatureExtraction <- function(filePath){
-  if(!require(package = "rPython")){
-    install.packages("rPython")
-  }
-  library(rPython)
-
-  pathPyScript = paste(getwd(),"/hd5Python/PythonSrc/featureExtraction.py",sep="")
-  Sys.setenv(PATH = paste('/Users/multivax/anaconda/bin/python', Sys.getenv("PATH"),sep=":"))
-  system( paste('/Users/multivax/anaconda/bin/python ', pathPyScript,sep=""))
-  
-  python.load("featureExtraction.py")
-  python.assign("filePath", filePath)
-  python.exec(paste("h5 = h5get.open_h5_file_read(filepath)",sep=""))
-  python.exec("duration = h5get.get_duration(h5)")
-  python.exec("sampleRate = h5get.get_analysis_sample_rate(h5)")
-  python.exec("artist = h5get.get_artist_name(h5)")
-  python.exec("title = h5get.get_title(h5)")
-  python.exec("trackID = h5get.get_track_id(h5)")
-  python.exec("chromaFeatures = h5get.get_segments_pitches(h5)")
-  python.exec("timbre = h5get.get_segments_timbre(h5)")
-  python.exec("similarArtists = h5get.get_similar_artists(h5)")
-  python.exec("md5 = h5get.get_audio_md5(h5)")
-  python.exec("h5.close()")
-  
-  artist <- python.get("artist")
-  title <- python.get("title")
-  trackID <- python.get("trackID")
-  sampleRate <- python.get("sampleRate")
-  similarArtists <- python.get("similarArtists")
-  md5Hash <- python.get("md5")
-  
-  print(artist)
-  print(title)
-  
-  
-}

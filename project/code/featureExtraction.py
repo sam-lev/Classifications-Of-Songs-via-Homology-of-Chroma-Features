@@ -6,7 +6,7 @@ sys.path.append(cwd + '/hd5Python/PythonSrc/')
 import hdf5_getters as h5get
 import csv
 
-def geth5Attributes(filPath):
+def geth5Attributes(filePath, wantSimilar = False):
     h5 = h5get.open_h5_file_read(filePath)
     duration = h5get.get_duration(h5)
     sampleRate = h5get.get_analysis_sample_rate(h5)
@@ -20,19 +20,22 @@ def geth5Attributes(filPath):
     h5.close()
     # features not added to csv
     #chromaFeatures, timbre
-    return trackID, duration, sampleRate, artist, title, md5
+    if wantSimilar == True:
+        return trackID, [similarArtists]
+    else:
+        return trackID, duration, sampleRate, artist, title, md5
 
 
         
-def writeCSV(songAttributes):
-    with open(os.getcwd()+'/'+'attributes.csv','a') as csvfile:
+def writeCSV(songAttributes, fileName):
+    with open(os.getcwd()+'/'+fileName+'.csv','a') as csvfile:
         attributeFile = csv.writer(csvfile, delimiter=' ')
         attributeFile.writerow(songAttributes)
 
 lenFullPath = len(os.getcwd()+'/MillionSongSubset/data/B/A/K')
 allSongDir = [directory[0] for directory in os.walk(os.getcwd()+'/MillionSongSubset/data/') if len(directory[0]) == lenFullPath ]
 
-def writeAttributestoCSV():
+def writeAttributeCSV(fileName, wantSimilar = False):
     for songDir in allSongDir:
         for h5File in [h5 for h5 in os.listdir( songDir ) if h5.endswith(".h5")]:
             filePath = songDir +"/"+ h5File
@@ -41,9 +44,15 @@ def writeAttributestoCSV():
             # printed per row in the following attribute order
             # songH5FileName, duration, sampleRate, artist, title, trackID, md5AudoHash, similarArtists
             #duration, sampleRate, artist, title, trackID, chromaFeatures, timbre, similarArtists, md5 = geth5Attributes(filePath)
-            writeCSV(geth5Attributes(filePath))
+            writeCSV(geth5Attributes(filePath, wantSimilar), fileName)
 
-def findArtist(artist, title):
+def printAllSongAttributes():
+    for songDir in allSongDir:
+        for h5File in [h5 for h5 in os.listdir( songDir ) if h5.endswith(".h5")]:
+            filePath = songDir +"/"+ h5File
+            print(geth5Attributes(filePath, wantSimilar = True))
+
+def findArtist(artist, title, similarArtists):
     h5 = h5get.open_h5_file_read('msd_summary_file.h5')
     artistSongs = []
     artistSong = None
@@ -62,7 +71,15 @@ allH5 = []
 for songDir in allSongDir:
     for h5File in [h5 for h5 in os.listdir( songDir ) if h5.endswith(".h5")]:
         allH5.append(h5File)
+
 DeathLetterBlues = [sonHouse for sonHouse in allH5 if sonHouse == 'TRGCDIW128EF33E1E9.h5' or sonHouse == 'TRHXYYB128F42795C6.h5' or sonHouse == 'TRRWDSF128F426CCFD.h5' or sonHouse == 'TRRRFYZ128F92EAB74.h5']
 
-print(DeathLetterBlues)
-#print(allH5)
+def readAttributeCSV(fileName):
+    with open(fileName, 'r') as csvFile:
+        reader = csv.reader(csvFile)
+        print(len(next(reader)))
+
+
+#print(DeathLetterBlues)
+#writeAttributeCSV('similarArtists', wantSimilar = True)
+readAttributeCSV('similarArtists.csv')
