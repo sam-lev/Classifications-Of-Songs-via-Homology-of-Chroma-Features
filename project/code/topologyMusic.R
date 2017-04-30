@@ -341,7 +341,7 @@ readPersistenceCSV <- function( filePath, dirPath, songNames = FALSE){
 
     for( f in 1:length(csvFiles)){
       persistenceDiagrams[[f]] <- as.matrix(read.csv(paste(dirPath,csvFiles[f],sep="")))
-      csvFiles[f] = gsub('.{4}$', '', csvFiles[f])
+      csvFiles[f] = gsub('.{4}$', '', basename(csvFiles[f])) #csvFiles[f])
     }
     if(!songNames){
       return(persistenceDiagrams)
