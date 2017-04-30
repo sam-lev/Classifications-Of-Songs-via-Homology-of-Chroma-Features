@@ -391,7 +391,7 @@ topomdscale <- function(bottleneck, pwasserstein, p, fromFile){
   }
 }
 
-twelveBarBluesComposition <- function(){
+twelveBarBluesComposition <- function(pathToFile, X){
   "The function uses the persistence diagram of a 12-bar blues
    musical composition which is unique to a small subset of songs 
    to compare to other songs in order to identify which songs, as 
@@ -402,6 +402,17 @@ twelveBarBluesComposition <- function(){
     As the base song to find other 12-Bar blues we use 
     Death Letter Blues by Son House
   "
+  
+  if (!require(package = "TDA")) {
+    install.packages("TDA")
+  }
+  library("TDA")
+  
+  if (!require(package = "ggplot2")) {
+    install.packages("ggplot2")
+  }
+  library("ggplot2")
+  pairwiseBottleneckDist <- as.data.frame(read.csv( paste(getwd(),pathToFile,sep="") ))
 }
 
 
