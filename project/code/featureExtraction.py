@@ -52,7 +52,7 @@ def printAllSongAttributes():
             filePath = songDir +"/"+ h5File
             print(geth5Attributes(filePath, wantSimilar = True))
 
-def findArtist(artist, title, similarArtists):
+def findArtistMillionSongs(artist = None, title = None):
     h5 = h5get.open_h5_file_read('msd_summary_file.h5')
     artistSongs = []
     artistSong = None
@@ -65,14 +65,44 @@ def findArtist(artist, title, similarArtists):
             print(h5get.get_track_id(h5,k))
             artistSong = h5get.get_track_id(h5,k)
     h5.close()
+    if artist != None and title != None:
+        return artistSongs, artistSong
+    if artist != None and title == None:
+        return artistSongs
+    if artist == None and title != None:
+        return artistSong
 
-#findArtist("Son House", "Death Letter Blues")
-allH5 = []
-for songDir in allSongDir:
-    for h5File in [h5 for h5 in os.listdir( songDir ) if h5.endswith(".h5")]:
-        allH5.append(h5File)
 
-DeathLetterBlues = [sonHouse for sonHouse in allH5 if sonHouse == 'TRGCDIW128EF33E1E9.h5' or sonHouse == 'TRHXYYB128F42795C6.h5' or sonHouse == 'TRRWDSF128F426CCFD.h5' or sonHouse == 'TRRRFYZ128F92EAB74.h5']
+def findInSubset(songFile = None, artist = None, title = None):
+    allH5 = []
+    for songDir in allSongDir:
+        for h5File in [h5 for h5 in os.listdir( songDir ) if h5.endswith(".h5")]:
+            filePath = songDir +"/"+ h5File
+            allH5.append(filePath)
+    if songFile is not None:
+        matches  = [songh5 for songh5 in allH5 if songh5 == songFile]
+    if artist is not None or title is not None:
+        artistSongs = []
+        artistSong = None
+        for h5file in allH5:
+            h5 = h5get.open_h5_file_read(h5file)
+            a_name = h5get.get_artist_name(h5)
+            a_title = h5get.get_title(h5)
+            if a_name == artist:
+                artistSongs.append(h5file)
+            if a_title == title:
+                print(h5get.get_track_id(h5,k))
+                artistSong = h5file
+            h5.close()
+        if artist is not None and title is not None:
+            return artistSongs, artistSong
+        if artist is not None and title is None:
+            return artistSongs
+        if artist is None and title is not None:
+            return artistSong
+   
+
+#sonHouse == 'TRGCDIW128EF33E1E9.h5' or sonHouse == 'TRHXYYB128F42795C6.h5' or sonHouse == 'TRRWDSF128F426CCFD.h5' or sonHouse == 'TRRRFYZ128F92EAB74.h5']
 
 def readAttributeCSV(fileName):
     with open(fileName, 'r') as csvFile:
@@ -80,6 +110,8 @@ def readAttributeCSV(fileName):
         print(len(next(reader)))
 
 
+#findArtist("Son House", "Death Letter Blues",)
 #print(DeathLetterBlues)
 #writeAttributeCSV('similarArtists', wantSimilar = True)
-readAttributeCSV('similarArtists.csv')
+#readAttributeCSV('similarArtists.csv')
+print( findInSubset(artist = "son house") )

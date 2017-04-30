@@ -219,7 +219,7 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
     persistenceData = readPersistenceCSV(dirPath = fromDirPath, songNames= TRUE)
     songNames = persistenceData$songNames
     persistenceDiagrams = persistenceData$diagrams
-    print(persistenceDiagrams)
+    
     # Compute all pairwise persistence diagrams and store
     # to matrix.
     bottleneckMatrix= matrix(data=NA, nrow=length(persistenceDiagrams), ncol=length(persistenceDiagrams))
@@ -309,12 +309,12 @@ writeH5Persistence <- function(  ){
       # Write to file. Create directory if does not 
       # exist then write file
       pathTo <- dirname(h5Files[s])
-      print(paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep=""))
+      #print(paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep=""))
       #paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep="")
       if(!file.exists(pathTo)){
         dir.create(paste(getwd(),"/output/persDiag/",pathTo,sep=""), showWarnings =FALSE, recursive = TRUE)
       }
-      print( paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep="") )
+      #print( paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep="") )
       write.csv(pers, row.names = FALSE, file = paste(getwd(),"/output/persDiag/",gsub('.{3}$', '', h5Files[s]),".csv",sep=""))
       
       persChromaSongs[[s]] = pers
