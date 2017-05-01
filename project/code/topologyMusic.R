@@ -380,7 +380,12 @@ topomdscale <- function(bottleneck, pwasserstein, p, fromFile){
   The representation is only determined up to location (cmdscale
   takes the column means of the configuration to be at the origin),
   rotations and reflections. The configuration returned is given in
-  principal-component axes,"
+  principal-component axes,
+  
+  pairwiseBottleneckDist <- as.data.frame(read.csv( pathToFile ))
+  mdsBdist <- topomdscale(bottleneck = pairwiseBottleneckDist)
+  plot(mdsBdistpoints[,1], mdsBdist$points[,2])
+  "
   if (!require(package = "stats")) {
     install.packages("stats")
   }
@@ -413,8 +418,13 @@ twelveBarBluesComposition <- function(pathToFile, X, mds = FALSE, cluster, K, pl
     As the base song to find other 12-Bar blues we use 
     Death Letter Blues by Son House 'TRYZZOJ128F1466CB7.h5'
 
-    twelveBarBluesComposition(pathToFile = paste(getwd(),'/output/pairWiseBottleneckAASonhouse.csv',sep=''
-                                                 ),mds = TRUE, plot = TRUE, cluster = kmeans)"
+    e.g. twelveBarBluesComposition(pathToFile = paste(getwd(),'/output/pairWiseBottleneckAASonhouse.csv',sep=''
+                                                 ),mds = TRUE, plot = TRUE, cluster = kmeans)
+  
+     or
+  
+        twelveBarBluesComposition(pathToFile = paste(getwd(),'/output/pairWiseBottleneckAASonhouse.csv',sep=''
+                                                ), mds = FALSE, plot = TRUE, cluster = 'kmeans', K=15)"
   
   if (!require(package = "TDA")) {
     install.packages("TDA")
@@ -447,12 +457,47 @@ twelveBarBluesComposition <- function(pathToFile, X, mds = FALSE, cluster, K, pl
 
         pairwiseBdistClusters$cluster <- as.factor(pairwiseBdistClusters$cluster)
         print(pairwiseBdistClusters)
+        if(plot){
         plot(mdsBdist, col = pairwiseBdistClusters$cluster, xlab = "multiDimensional Scaling with Bottleneck Distance", ylab = "")
-        
+        }
       }else{
       pairwiseBdistClusters <- kmeans(pairwiseBottleneckDist, K)
       print(pairwiseBdistClusters)
       pairwiseBdistClusters$cluster <- as.factor(pairwiseBdistClusters$cluster)
+      clusterPoints <- pairwiseBdistClusters$centers
+
+      "
+      Now of the K clusters, the five in each cluster with minimal bottleneck distance
+      are found.
+      "
+      centersCopy <- pairwiseBdistClusters$centers
+      fiveNearest <- pairwiseBdistClusters$centers[,1:6]
+      fiveMinBdist <- pairwiseBdistClusters$centers[,1:6]
+      colnames(fiveNearest) <- c(1:6)
+      colnames(fiveMinBdist) <- c(1:6)
+      print(centersCopy[2,134])
+      for(i in 1:nrow(pairwiseBdistClusters$centers)){
+        for( j in 1:6){
+          minBCenterIndex <- which.min(centersCopy[i,])
+          fiveNearest[i,j] <- colnames(pairwiseBdistClusters$centers)[minBCenterIndex]
+          fiveMinBdist[i,j] <- pairwiseBdistClusters$centers[i,minBCenterIndex]
+          centersCopy[i,minBCenterIndex] = 2
+        }
+      }
+      print(fiveNearest)
+      print(fiveMinBdist)
+      if(plot){
+        for(q in 1:nrow(pairwiseBdistClusters$centers)){
+          for(p in 1:ncol(pairwiseBdistClusters$centers)){
+            if( pairwiseBdistClusters$centers[q,p] > 0.4){
+              pairwiseBdistClusters$centers[q,p] = 0
+            }
+          }
+        }
+        png('kmeansCenters.png')
+        plot(pairwiseBdistClusters$centers, col = c(1:K), ylab = "",xlab = "k-Means Clustering Centers")
+        dev.off()
+      }
       "
       mydata <- dat
       wss <- (nrow(mydata)-1)*sum(apply(mydata,2,var))
@@ -465,25 +510,14 @@ twelveBarBluesComposition <- function(pathToFile, X, mds = FALSE, cluster, K, pl
       #op <- par(oma=c(5,7,1,1))
       #par(op)
       #ggplot(pairwiseBottleneckDist, aes( pairwiseBottleneckDist , pairwiseBottleneckDist, color = pairwiseBdistClusters$cluster)) + geom_point()
-      #png('kmeansCluster.png', width= 10000, height = 10000)
-      #plot(pairwiseBottleneckDist, col = pairwiseBdistClusters$cluster)
-      #dev.off()
+
       }
     }
     if(cluster == 'knearest'){
-      "
-      TRTMHJA12903CD8F4D
-      TRTMBEM128F427E66C
-      TRTPAZU128F92FFC5A
-      TRTPKNW128F427E83C
-      TRTOAOZ128F42760C0
-      TRTYTVH12903CE7403
-      TRYCIVS12903C95AB5
-      TRYZZOJ128F1466CB7-death letter blues
-      TRYIOMM128F9331B2D
-      TRYAVAL128F930CA78
-      TRYUOOZ128F427E839
-      "
+      sonHouse <- c("TRTMHJA12903CD8F4D","TRTMBEM128F427E66C","TRTPAZU128F92FFC5A","TRTPKNW128F427E83C",
+                    "TRTOAOZ128F42760C0","TRTYTVH12903CE7403","TRYCIVS12903C95AB5","TRYZZOJ128F1466CB7",
+                    "TRYIOMM128F9331B2D","TRYAVAL128F930CA78","TRYUOOZ128F427E839")
+      deathLetterBlues <-"TRYZZOJ128F1466CB7"
       if(!missing(K)){K=20}
       minBdist <- 2.0
       kCount <- 0
@@ -491,7 +525,6 @@ twelveBarBluesComposition <- function(pathToFile, X, mds = FALSE, cluster, K, pl
       colCopy <- pairwiseBottleneckDist$'TRYCIVS12903C95AB5'
       for(i in 1:(K+1)){
         minBIndex <- which.min(colCopy)
-        print(colnames(pairwiseBottleneckDist)[minBIndex])
         kNearest[i] <- colnames(pairwiseBottleneckDist)[minBIndex]
         colCopy[minBIndex] <- 2.0
 

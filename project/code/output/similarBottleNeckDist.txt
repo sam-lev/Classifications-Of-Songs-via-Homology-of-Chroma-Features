@@ -1,0 +1,21 @@
+> Song A: TRAAAAW128F429D538
+> 
+> Song B: the first nearest song to song A: TRAATNJ128F42631BA
+> distance(Song A:, Song B) = 0.03880106
+> Index in the csv file: 250th song
+> 
+> Song C: the second nearest song to song A: TRAABJV128F1460C49
+> distance(Song A:, Song C) = 0.04295375
+> Index in the csv file: 15th song
+> 
+> 
+> 
+> Song D: TRAAABD128F429CF47
+> 
+> Song E: the first nearest song to song D: TRAACOW128F933E35F
+> distance(Song D:, Song E) = 0.02080051
+> Index in the csv file: 30th song
+> 
+> Song F: the second nearest song to song D: TRAADNA128F9331246
+> distance(Song D:, Song F) = 0.02239261
+> Index in the csv file: 47th song
