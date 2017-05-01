@@ -375,7 +375,12 @@ topomdscale <- function(bottleneck, pwasserstein, p, fromFile){
      read as the distance structure to be used.
     Takes the pairwise distance matrix as and attempts to embed 
     it isometrically in Euclidean space with minimum distortion 
-    of the metric. "
+    of the metric. 
+  
+  The representation is only determined up to location (cmdscale
+  takes the column means of the configuration to be at the origin),
+  rotations and reflections. The configuration returned is given in
+  principal-component axes,"
   if (!require(package = "stats")) {
     install.packages("stats")
   }
@@ -386,12 +391,18 @@ topomdscale <- function(bottleneck, pwasserstein, p, fromFile){
     mds <- cmdscale(distMat, eig=TRUE, k=2)
     x <- mds$points[, 1]
     y <- mds$points[, 2]
-    
-    plot(x,y)
+    return('x'=x,'y'=y)
+  }
+  if(!missing(bottleneck)){
+    pairwiseBdist <- as.matrix(bottleneck)
+    mdsBdist <- cmdscale(pairwiseBdist, eig=TRUE, k=2)
+    x <- mdsBdist$points[,1]
+    y <- mdsBdist$points[,2]
+    return(list('x' = x, 'y'= y))
   }
 }
 
-twelveBarBluesComposition <- function(pathToFile, X){
+twelveBarBluesComposition <- function(pathToFile, X, mds = FALSE, cluster, K, plot=FALSE){
   "The function uses the persistence diagram of a 12-bar blues
    musical composition which is unique to a small subset of songs 
    to compare to other songs in order to identify which songs, as 
@@ -400,8 +411,10 @@ twelveBarBluesComposition <- function(pathToFile, X){
   "
   "
     As the base song to find other 12-Bar blues we use 
-    Death Letter Blues by Son House
-  "
+    Death Letter Blues by Son House 'TRYZZOJ128F1466CB7.h5'
+
+    twelveBarBluesComposition(pathToFile = paste(getwd(),'/output/pairWiseBottleneckAASonhouse.csv',sep=''
+                                                 ),mds = TRUE, plot = TRUE, cluster = kmeans)"
   
   if (!require(package = "TDA")) {
     install.packages("TDA")
@@ -412,7 +425,82 @@ twelveBarBluesComposition <- function(pathToFile, X){
     install.packages("ggplot2")
   }
   library("ggplot2")
-  pairwiseBottleneckDist <- as.data.frame(read.csv( paste(getwd(),pathToFile,sep="") ))
+
+  pairwiseBottleneckDist <- as.data.frame(read.csv( pathToFile ))
+  rownames(pairwiseBottleneckDist) = pairwiseBottleneckDist[,1]
+  pairwiseBottleneckDist <- pairwiseBottleneckDist[,2:length(pairwiseBottleneckDist)]
+
+  if(!missing(cluster)){
+    
+    if(cluster == 'kmeans'){
+      if(missing(K)){ K = 10}
+      if(mds){
+        for(q in 1:nrow(pairwiseBottleneckDist)){
+          for(p in 1:ncol(pairwiseBottleneckDist)){
+            if( pairwiseBottleneckDist[q,p] > 0.4){
+              pairwiseBottleneckDist[q,p] = 0
+            }
+          }
+        }
+        mdsBdist <- topomdscale(bottleneck = pairwiseBottleneckDist)
+        pairwiseBdistClusters <- kmeans(pairwiseBottleneckDist, K)
+
+        pairwiseBdistClusters$cluster <- as.factor(pairwiseBdistClusters$cluster)
+        print(pairwiseBdistClusters)
+        plot(mdsBdist, col = pairwiseBdistClusters$cluster, xlab = "multiDimensional Scaling with Bottleneck Distance", ylab = "")
+        
+      }else{
+      pairwiseBdistClusters <- kmeans(pairwiseBottleneckDist, K)
+      print(pairwiseBdistClusters)
+      pairwiseBdistClusters$cluster <- as.factor(pairwiseBdistClusters$cluster)
+      "
+      mydata <- dat
+      wss <- (nrow(mydata)-1)*sum(apply(mydata,2,var))
+      for (i in 2:15) wss[i] <- sum(kmeans(mydata,
+                                       centers=i)$withinss)
+      plot(1:15, wss, type='b', xlab='Number of Clusters',
+     ylab='Within groups sum of squares',
+     main='Assessing the Optimal Number of Clusters with the Elbow Method',
+     pch=20, cex=2)"
+      #op <- par(oma=c(5,7,1,1))
+      #par(op)
+      #ggplot(pairwiseBottleneckDist, aes( pairwiseBottleneckDist , pairwiseBottleneckDist, color = pairwiseBdistClusters$cluster)) + geom_point()
+      #png('kmeansCluster.png', width= 10000, height = 10000)
+      #plot(pairwiseBottleneckDist, col = pairwiseBdistClusters$cluster)
+      #dev.off()
+      }
+    }
+    if(cluster == 'knearest'){
+      "
+      TRTMHJA12903CD8F4D
+      TRTMBEM128F427E66C
+      TRTPAZU128F92FFC5A
+      TRTPKNW128F427E83C
+      TRTOAOZ128F42760C0
+      TRTYTVH12903CE7403
+      TRYCIVS12903C95AB5
+      TRYZZOJ128F1466CB7-death letter blues
+      TRYIOMM128F9331B2D
+      TRYAVAL128F930CA78
+      TRYUOOZ128F427E839
+      "
+      if(!missing(K)){K=20}
+      minBdist <- 2.0
+      kCount <- 0
+      kNearest <-  vector("list", length(colnames(pairwiseBottleneckDist)))
+      colCopy <- pairwiseBottleneckDist$'TRYCIVS12903C95AB5'
+      for(i in 1:(K+1)){
+        minBIndex <- which.min(colCopy)
+        print(colnames(pairwiseBottleneckDist)[minBIndex])
+        kNearest[i] <- colnames(pairwiseBottleneckDist)[minBIndex]
+        colCopy[minBIndex] <- 2.0
+
+      }
+      return(kNearest[1:K+1])
+    }
+    ""
+    
+  }
 }
 
 
@@ -465,6 +553,8 @@ kmeansPersistence <- function( persChromaSong){
   box()
   
 }
+
+
 
 cleanPersCSV <- function(dirPath){
   problemExample <- "/Users/multivax/Documents/PhD/2.spring.17/Classifications-Of-Songs-via-Homology-of-Chroma-Features/project/code/output/persDiag/"
