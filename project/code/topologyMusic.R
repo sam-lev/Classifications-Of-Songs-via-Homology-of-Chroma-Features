@@ -53,14 +53,7 @@ musicTopology <- function() {
   
   # Attributes held in songs .H5 file.
   attr <- list.datasets(song)
-  print(attr)
-  print("######")
-  print("all attributes from song file")
-  print(attr)
-  print("#######")
-  print("#######")
-  print("Chroma features")
-  print(chroma)
+
   
   # Calculate the chroma matrix.  Use a long FFT to discriminate
   # spectral lines as well as possible (2048 is the default value)
@@ -101,7 +94,6 @@ musicTopology <- function() {
 
   
   # Plot the spectragram of the chroma features. Assuming sampling rate of 2
-  # Note: you must comment out other plots to see this.
   specgram(hz, n = min(256, nhz), Fs = 2)
 
   
@@ -513,6 +505,11 @@ twelveBarBluesComposition <- function(pathToFile, X, mds = FALSE, cluster, K, pl
 
       }
     }
+    '
+    Looking at the bottleneck distance 
+    pairwise distance matrix frind the poits nearest
+    
+    '
     if(cluster == 'knearest'){
       sonHouse <- c("TRTMHJA12903CD8F4D","TRTMBEM128F427E66C","TRTPAZU128F92FFC5A","TRTPKNW128F427E83C",
                     "TRTOAOZ128F42760C0","TRTYTVH12903CE7403","TRYCIVS12903C95AB5","TRYZZOJ128F1466CB7",
@@ -531,7 +528,81 @@ twelveBarBluesComposition <- function(pathToFile, X, mds = FALSE, cluster, K, pl
       }
       return(kNearest[1:K+1])
     }
-    ""
+    
+    "
+    Perform k medoid clustering on song groups
+    "
+    if(cluster == 'kMedoids'){
+      if (!require(package = "cluster")) {
+        install.packages("cluster")
+      }
+      library("cluster")
+      if(missing(K)){ K = 10}
+      if(mds){
+        for(q in 1:nrow(pairwiseBottleneckDist)){
+          for(p in 1:ncol(pairwiseBottleneckDist)){
+            if( pairwiseBottleneckDist[q,p] > 0.4){
+              pairwiseBottleneckDist[q,p] = 0
+            }
+          }
+        }
+        mdsBdist <- topomdscale(bottleneck = pairwiseBottleneckDist)
+        pairwiseBdistClusters <- pam(pairwiseBottleneckDist, K)
+        
+        pairwiseBdistClusters$cluster <-
+          as.factor(pairwiseBdistClusters$clustering)
+        print(pairwiseBdistClusters)
+        if(plot){
+          plot(mdsBdist, col = pairwiseBdistClusters$clustering, xlab =
+                 "multiDimensional Scaling with Bottleneck Distance with Kmedoid", ylab = "")
+        }
+      }else{
+        pairwiseBdistClusters <- pam(pairwiseBottleneckDist, K)
+        print(pairwiseBdistClusters)
+        pairwiseBdistClusters$clustering <-
+          as.factor(pairwiseBdistClusters$clustering)
+        clusterPoints <- pairwiseBdistClusters$medoids
+        
+        "
+        Now of the K clusters, the five in each cluster with minimal
+        bottleneck distance
+        are found.
+        "
+        centersCopy <- pairwiseBdistClusters$medoids
+        fiveNearest <- pairwiseBdistClusters$medoids[,1:6]
+        fiveMinBdist <- pairwiseBdistClusters$medoids[,1:6]
+        colnames(fiveNearest) <- c(1:6)
+        colnames(fiveMinBdist) <- c(1:6)
+        print(centersCopy[2,134])
+        for(i in 1:nrow(pairwiseBdistClusters$medoids)){
+          for( j in 1:6){
+            minBCenterIndex <- which.min(centersCopy[i,])
+            fiveNearest[i,j] <-
+              colnames(pairwiseBdistClusters$medoids)[minBCenterIndex]
+            fiveMinBdist[i,j] <-
+              pairwiseBdistClusters$medoids[i,minBCenterIndex]
+            centersCopy[i,minBCenterIndex] = 2
+          }
+        }
+        print(fiveNearest)
+        print(fiveMinBdist)
+        
+        if(plot){
+          for(q in 1:nrow(pairwiseBdistClusters$medoids)){
+            for(p in 1:ncol(pairwiseBdistClusters$medoids)){
+              if( pairwiseBdistClusters$medoids[q,p] > 0.4){
+                pairwiseBdistClusters$medoids[q,p] = 0
+              }
+            }
+          }
+          png('kmedoidsCenters.png')
+          plot(pairwiseBdistClusters$medoids, col = c(1:K), ylab = "",xlab
+               = "k-Medoids Clustering Centers")
+          dev.off()
+        }
+
+      }
+    }
     
   }
 }
@@ -587,7 +658,77 @@ kmeansPersistence <- function( persChromaSong){
   
 }
 
+spectogramChoma <- function(filePath){
+  
+  
 
+  if (!require(package = "h5")) {
+    install.packages("h5")
+  }
+  library("h5")
+  
+  
+  if (!require(package = "signal")) {
+    install.packages("signal")
+  }
+  library("signal")
+  
+  if(!require(package = "stats")){
+    install.packages("stats")
+  }
+  library("stats")
+  # Calculate the chroma matrix.  Use a long FFT to discriminate
+  # spectral lines as well as possible (2048 is the default value)
+  #
+  # Establish the sample rate used for current song
+  # This is not the tue sample rate.
+  # I can not find the field for sampling rate
+  
+  # get the chroma feature as a data.frame
+  preachin = "./MillionSongSubset/data/sonHouse/TRYUOOZ128F427E839.h5"
+  filePath = preachin
+  song = h5file(filePath, mode = "a")
+  chroma = song["/analysis/segments_pitches"] 
+  sr = song["/analysis/sample_rate"]
+  
+
+  # Attributes held in songs .H5 file.
+  attr <- list.datasets(song)
+  
+  
+  # Calculate the chroma matrix.  Use a long FFT to discriminate
+  # spectral lines as well as possible (2048 is the default value)
+  #
+  # Establish the sample rate used for current song
+  # This is not the tue sample rate.
+  # I can not find the field for sampling rate
+  sr = 2# 45*1000#sample rate
+  cfftlen = 2048
+  hz = chroma[,1]
+  tone = chroma[1,]
+  ntone = ncol(chroma)
+  nhz = nrow(chroma)
+  
+  # same parameters as above for song 2
+
+  
+  # The frame advance is always one quarter of the FFT length.  Thus,
+  # the columns  of chroma are at timebase of fftlen/4/sr
+  t = 1:nhz*cfftlen/4/sr 
+  
+  # Plot the chroma features with resoect to time and Hz value
+  chromMatrix = as.matrix(hz, t)#20*log10(hz))
+  #plot(chromMatrix)
+  
+  
+  # Plot the spectragram of the chroma features. Assuming sampling rate of 2
+  png(paste(getwd(), '/spectoGramPreachin.png', sep=""))
+  plot(specgram(hz, n = min(256, nhz), Fs = 2))
+  dev.off()
+  
+  h5close(song)
+  
+}
 
 cleanPersCSV <- function(dirPath){
   problemExample <- "/Users/multivax/Documents/PhD/2.spring.17/Classifications-Of-Songs-via-Homology-of-Chroma-Features/project/code/output/persDiag/"
