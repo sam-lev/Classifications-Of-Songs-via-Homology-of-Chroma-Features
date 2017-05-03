@@ -814,6 +814,85 @@ spectogramChoma <- function(filePath){
 }
 
 
+makeOFFChroma <- function(filePath){
+  
+  
+  
+  if (!require(package = "h5")) {
+    install.packages("h5")
+  }
+  library("h5")
+  
+  
+  if (!require(package = "signal")) {
+    install.packages("signal")
+  }
+  library("signal")
+  
+  
+  if (!require(package = "phonTools")) {
+    install.packages("phonTools")
+  }
+  library("phonTools")
+  
+  
+  if(!require(package = "stats")){
+    install.packages("stats")
+  }
+  library("stats")
+  # Calculate the chroma matrix.  Use a long FFT to discriminate
+  # spectral lines as well as possible (2048 is the default value)
+  #
+  # Establish the sample rate used for current song
+  # This is not the tue sample rate.
+  # I can not find the field for sampling rate
+  
+  # get the chroma feature as a data.frame
+  #if(missing(filePath)){
+    preachin = "./MillionSongSubset/data/sonHouse/TRYUOOZ128F427E839.h5"
+    filePath = preachin
+  #}
+  song = h5file(filePath, mode = "a")
+  chroma = song["/analysis/segments_pitches"] 
+  sr = song["/analysis/sample_rate"]
+  
+  
+  # Attributes held in songs .H5 file.
+  attr <- list.datasets(song)
+  
+  
+  # Calculate the chroma matrix.  Use a long FFT to discriminate
+  # spectral lines as well as possible (2048 is the default value)
+  #
+  # Establish the sample rate used for current song
+  # This is not the tue sample rate.
+  # I can not find the field for sampling rate
+  sr = 2# 45*1000#sample rate
+  cfftlen = 2048
+  hz = chroma[,1]
+  tone = chroma[1,]
+  ntone = ncol(chroma)
+  nhz = nrow(chroma)
+  
+  # same parameters as above for song 2
+  
+  
+  # The frame advance is always one quarter of the FFT length.  Thus,
+  # the columns  of chroma are at timebase of fftlen/4/sr
+  t = 1:nhz*cfftlen/4/sr 
+  
+  # Plot the chroma features with resoect to time and Hz value
+  chromMatrix <- as.matrix(hz, t)#20*log10(hz))
+  #plot(chromMatrix)
+  #print(chromMatrix)
+  print(chromMatrix)
+  #makeOFF(filename = 'preachinChroma', pointcloud = specgram(hz, n = min(256, nhz), Fs = 2))
+  sink(file = NULL)
+  sink(file = NULL)
+  h5close(song)
+  
+}
+
 ##########################################################################################################################
 #
 #                                        Functionality for ShortLoop

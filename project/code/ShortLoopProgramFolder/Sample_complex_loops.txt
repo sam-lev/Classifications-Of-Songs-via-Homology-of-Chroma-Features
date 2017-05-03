@@ -1,0 +1,2 @@
+0 loops
+Basis length: 0
