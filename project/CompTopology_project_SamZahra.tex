@@ -145,17 +145,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{enumerate}
+
   
-\item \textbf{  Project overview}
+\underline{\Large \bf Project overview}
   
-  Most common in learning algorithms for music is to classify songs based on user input, where song labels are determined by a user's cluster of preferred music. We aim to instead label songs based on structural similarities. Specifically, we aim to classify songs based on topological similarities after embedding a song's musical composition in euclidean space using the pitches and their time signatures within the composition.
+  Most common in learning algorithms for music is to classify songs based on user input, where song labels are determined by a user's cluster of preferred music. We aim to instead label songs based on structural similarities. Specifically, we aim to classify songs based on topological similarities after embedding a song's musical composition in euclidean space using the pitches and their time signatures within the composition.\\
 
-\item \textbf{Motivation \& Merit}
+\underline{\Large \bf Motivation \& Merit}
 
-  Most of the current methods for song recommendation are based on the song similarity among users' common songs. This is called collaborative filtering recommendation. This project attempts to propose a content based filtering recommendation method where similar songs are found based on their inner content and structure, rather than the users who have listened to them. Therefore, the proposed method is completely independent of clustering of songs based on user groups or ``genre'', instead, song similarities are extracted from their implicit compositions and structures. A topologically based learning algorithm as proposed here allows new means of studying music theory and novel approach to music classification and recommendation. 
+  Most of the current methods for song recommendation are based on the song similarity among users' common songs. This is called collaborative filtering recommendation. This project attempts to propose a content based filtering recommendation method where similar songs are found based on their inner content and structure, rather than the users who have listened to them. Therefore, the proposed method is completely independent of clustering of songs based on user groups or ``genre'', instead, song similarities are extracted from their implicit compositions and structures. A topologically based learning algorithm as proposed here allows new means of studying music theory and novel approach to music classification and recommendation. \\
 
-  \item \textbf{Technical details}
+  \underline{ \Large \bf Technical details}
+  
     \begin{itemize}
     \item \textbf{Methodology:}
       Our goal is to represent musical data in a form which allows us to extrapolate topological attributes unique to each song. These topological attributes, be it homologies or manifold structures, would then afford features to construct a novel means of song classification. 
@@ -202,7 +203,7 @@
     \end{itemize}
 
     
-  \item \textbf{Topological data analysis techniques:}
+  \underline{\Large \bf Topological data analysis techniques:}
     
     \begin{itemize}
     \item \textit{Persistent Homology:} Taking advantage of having each song represented as a point cloud persistent homology will allow us to identify the birth and death homological features unique to a musical composition. The dimension and quantity of homological features along with their birth and death times during persistence can then serve as musical compositions ``finger print''. This finger print, consisting of what homological features emerge and when, during persistence, they are born and die will allow us a means to relate separate songs.
@@ -232,7 +233,7 @@
     
     \end{itemize}
 
-  \item {\large \textbf{Predictive Model}}
+  \underline{\large \textbf{Predictive Model}}
     Here we will explain the machine learning component used from the TDA results in order to correlate related songs. Thre core methods for labeling songs as similar are used
     \begin{itemize}
     \item {\it K-Means Clustering:} Using the bottleneck distance and the q-Wasserstein distance as our metric between the persistent homology of songs it is possible to cluster songs using the K-means techniques. The motivation for this approach relies on the assumption that songs who have near persistence diagrams necessarily share musical structures which equate to homological features found during persistence.
@@ -241,7 +242,8 @@
     \end{itemize}
     
     
-\item {\large \textbf{Expected Results}}
+    \underline{\Large \textbf{Expected Results}}
+    
   \begin{itemize}
   \item \textit{Expected Outcome:}
     We suspect with the use of tools common to computational topology our project will provide a robust frame work to identify key music theoretic features such as meter, harmonic progression, song motifs, substitute chords within a progression, ect... It will then be an easy extension to apply machine learning techniques to build an accurate song/ song attribute classifier. 
@@ -258,12 +260,16 @@
       \item Use either persistent homology or extrapolated musical structures to label songs by genre based on genre of songs classified as similar in persistence.
       \item Use predictive model to train probabistic musical sequences in order to generate / predict musical progression given subset of musical composition.
       \end{enumerate}
-
-
+      
   \end{itemize}
-\end{enumerate}
 
-  {\large {\bf Current questions and obsticals during development}}{\small (not to be in final write-up)}
+\underline{\Large \textbf{Results}}\\
+      
+
+
+ \underline{\large Notes for Final Report and Reminders while implementing code}
+
+   {\bf Current questions and obsticals during development}{\it (not to be in final write-up, used while I coded as notes and reminders.)}
   
   \begin{itemize}
   \item what is the sampling rate used by the database for each song, currently 2 is being used
@@ -296,6 +302,8 @@
   \item To cite database ``Thierry Bertin-Mahieux, Daniel P.W. Ellis, Brian Whitman, and Paul Lamere. The Million Song Dataset. In Proceedings of the 12th International Society for Music Information Retrieval Conference (ISMIR 2011), 2011.''
   \item kmedoid more appropriate for distance matrix, difference in results with kmeans and kmed
   \end{itemize}
+
+  
   
 \end{document}
 %%% Local Variables:
