@@ -191,6 +191,12 @@
     \item \textit{Graph Representation:}  Each node corresponds to a pitch occurring in a musical piece along with the starting and stopping time of that pitch, specifically\\ $ \{ pitch, (t_{start(pitch)}, t_{stop(pitch)}) \} $. Edges of the graph correspond to nodes which are sequential. Each edge then correlates to pitches within a song which are consecutive. Weights could also be added to edges and valued proportional to the number of occurred sequential pairing. The larger the edge weight the more common than a series of pitches is.
 
     \item \textit{Matrix Construction:} Element $t_{i,j}$ of matrix $T$ implies pitch $i$ occurs before and is directly followed by pitch $j$. The rows and columns of $T$ correspond to observed pitches within the song. Element $t_{ij}$ contains the start and stop times of the consecutive pitches $i$ and $j$ as they have occurred throughout the song, specifically $\{[ (t^1_{start(i)}, t^1_{stop(i)}), \cdots ,t^m_{start(i)}, t^m_{stop(i)})]  , [(t^1_{start(j)}, , \cdots , t^m_{stop(j)})] \}$ and imply pitch identified to row $i$ occurs at $t^{\ell}_{start(i)}$ and lasts for  $ t^{\ell}_{stop(i)} - t^{\ell}_{start(i)}$ for each $\ell$ such that $1\leq \ell \leq m$ where $m$ is the total number of times pitch $i$ precedes pitch $j$ identified with column $j$ and beginning at $t^{\ell}_{start(j)}$ and lasting for $t^{\ell}_{stop(j)} - t^{\ell}_{start(j)}$.
+      \[
+      (t_{start(i)}, t_{stop(j)})\ i= pitch ``i'' \&  j= pitch ``j''
+      \]
+      \[
+      t_{i,j} \in T
+      \]
 
     \item \textit{Coordinate Mapping:} Two options are available for a coordinate representation. The first would be to take the matrix representation discussed above and translating it into a graphical representation. The second would be to plot each pitch directly into $\mathbb{R}^3$ where the coordinate $(x,y,z)$ is defined to be $(start\ time, stop\ time, pitch)$. Embedding each song in euclidean space in this manner allows each song to be represented as a point cloud in $\mathbb{R}^3$ consisting of every pitch that occurs in a song. 
     \end{itemize}

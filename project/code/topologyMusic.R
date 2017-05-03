@@ -270,6 +270,89 @@ pairwiseBottleneck <- function(fromDirPath, matrixData, persDiags, write){
 }# end pairwiseBottleneck()
 
 
+pairwiseDirtMovers <- function(fromDirPath, matrixData, persDiags, write){
+  " Function computes the pairwise bottleneck distance between 
+  persistence diagrams. If 'fromDirPath is present this function uses 
+  readPersistenceCSV(fromDirPath) function's output, i.e. reads from csv 
+  file 'pairwisePersistence.csv' to construct the matrix of pairwise 
+  persistence diagrams between songs 
+  If write is present it must be a string consisting of the desired 
+  file name to write the matrix of pairwise bottleneck distances to.
+  
+  e.g. pairwiseDirtMovers(fromDirPath = paste(getwd(), '/output/persDiag/A/A/A/',sep='') 
+                          , write = 'pairwiseDirtMovers')
+  "
+  if (!require(package = "TDA")) {
+    install.packages("TDA")
+  }
+  library("TDA")
+  # computes pairwise bottleneck distance between
+  # all diagram elements stored to file whose
+  # pathnames are in the list 'fromDirPath'
+  if(!missing(fromDirPath)){
+    # Fill list of persistence diagrams from csv files
+    # under path 'fromDirPath'
+    persistenceData = readPersistenceCSV(dirPath = fromDirPath, songNames= TRUE)
+    songNames = persistenceData$songNames
+    persistenceDiagrams = persistenceData$diagrams
+    # Compute all pairwise persistence diagrams and store
+    # to matrix.
+    dirtMoversMatrix= matrix(data=NA, nrow=length(persistenceDiagrams), ncol=length(persistenceDiagrams))
+    for(q in 1:length(persistenceDiagrams)){
+      for(p in 1:length(persistenceDiagrams)){
+        DMdist = wasserstein(persistenceDiagrams[[q]], persistenceDiagrams[[p]], p = 2, dimension = 1)
+        dirtMoversMatrix[q,p] = DMdist
+      }
+    }
+    # Label the bottleneck matrix X and Y axis to be that 
+    # of the .h5 files i.e. (foo, bar) corresponds to 
+    # the index of bottleneck distances from persistence diagrams
+    # of foo.h5 and bar.h5
+    rownames(dirtMoversMatrix) <- paste(songNames)
+    colnames(dirtMoversMatrix) <- paste(songNames)
+    
+    if(!missing(write)){
+      write.csv(dirtMoversMatrix, row.names = TRUE, file = paste(getwd(),"/output/",write,".csv",sep=""))
+    }
+    return(dirtMoversMatrix)
+  }
+  # computes pairwise bottleneck distance between
+  # all diagram elements in diag
+  if(!missing(persDiags)){
+    dirtMoversMatrix= matrix(data=NA, nrow=length(persDiags), ncol=length(persDiags))
+    for(q in 1:length(persDiags)){
+      for(p in 1:length(persDiags)){
+        dirtMoversMatrix[q,p] = wasserstein(persDiags[[q]], persDiags[[p]], p = 2, dimension = 1)
+      }
+    }
+    if(!missing(write)){
+      write.csv(dirtMoversMatrix, row.names = TRUE, file = paste(getwd(),"/output/",write,".csv",sep=""))
+    }
+    return(dirtMoversMatrix)
+  }
+  # computes pairwise bottleneck distance between
+  # all matrix data elements in matrixData, i.e.
+  # matrixData assumed to be point cloud.
+  # matrixData is of the form [ [dataset 1], [dataset 2], ...]
+  if(!missing(matrixData)){
+    persistenceDiagrams= matrix(data=NA, nrow=length(matrixData), ncol=length(matrixData))
+    for( pc in 1:length(matrixData)){
+      persistenceDiagrams[[pc]] = ripsDiag(matrixData[[pc]], maxdimension = 1, maxscale = 1, library="GUDHI", location = TRUE, printProgress=FALSE)$diagram
+    }
+    dirtMoversMatrix= matrix(data=NA, nrow=length(persistenceDiagrams), ncol=length(persistenceDiagrams))
+    for(q in 1:length(persistenceDiagrams)){
+      for(p in 1:length(persistenceDiagrams)){
+        dirtMoversMatrix[q,p] = wasserstein(persistenceDiagrams[[q]], persistenceDiagrams[[p]], p =2 , dimension = 1)
+      }
+    }
+    if(!missing(write)){
+      write.csv(dirtMoversMatrix, row.names = FALSE, file = paste(getwd(),"/output/",write,".csv",sep=""))
+    }
+    return(dirtMoversMatrix)
+  }
+  
+}# end pairwisDirtMovers()
+
 
 writeH5Persistence <- function(  ){
   "Computes persistence 
@@ -729,6 +812,134 @@ spectogramChoma <- function(filePath){
   h5close(song)
   
 }
+
+
+##########################################################################################################################
+#
+#                                        Functionality for ShortLoop
+# Note: From ReadMe.txt from shortloop
+#           Terminal command: ShortLoop <input.off> -v -t -a 0.01
+#           On parameters: Here -a 0.01 defines the alpha value for the Rips complex.
+#           Output: In both cases "ShortLoop" will produce three files:
+#                   <input_loops.txt> - description of the loops in the computed basis;
+#                   <input_loops.off> - visual representation of the loops;
+#                   <input_timing.txt> - timing information.
+############################################################################################################################
+
+#
+# Gather the coordinates of the points identified by shortloop as belonging to a unique component. 
+# in the persistence of the pointcloud.
+# OFFfile = name of OFFfile_loop.off, OFFfile.off, ect... file
+# pointcloudfile = file with pointcoordinate at unique line of file and number of line = number of row of coordinate
+# output: coordinates of each point in each component where i is unique component [[1]...[i]...[n]]
+componentpoints <-
+  function(OFFfile, pointcloudfile, plot){
+    
+    if (!require(package = "rgl")) {
+      install.packages("rgl")
+    }
+    library("rgl")
+    
+    #
+    # Read point cloud file
+    #
+    pointcloud <- readpointcloud(pointcloudfile)
+    pointcloud[1,] <- pointcloud[3,]
+    pointcloud[2,] <- pointcloud[3,]
+    
+    #
+    # get number of loops, line number of OFF file points located 
+    #
+    offFile <- read.table(paste(getwd(),"/ShortLoop/",OFFfile,".off",sep=""), header = FALSE, sep = "\n")
+    
+    loopFile <- read.table(paste(getwd(),"/ShortLoop/",OFFfile,"_loops.off",sep=""), header = FALSE, sep = "\n")
+    loopFileText <- read.table(paste(getwd(),"/ShortLoop/",OFFfile,"_loops.txt",sep=""), header = FALSE, sep = "\n", skip = 1)
+    numloops <- strtoi(strsplit(toString(read.table(paste(getwd(),"/ShortLoop/",OFFfile,"_loops.txt",sep=""), header = FALSE, sep = "\n", skip = 0)[1,], split = " "), split = " ")[[1]][1])
+    #text <- makeOFF("perpRings", uniformPerpRings(3,2,0,300,200,.8,.8,FALSE)$perprings)
+    
+    loopOFFcoord <- list() # a list of matrices where the i'th matrix is the coordinates in the OFF file of the points in loop i
+    for( i in 1:numloops){
+      loopimatrix <- strsplit(toString(loopFileText[i,]), split = " ")
+      loopOFFcoord[i] <- loopimatrix
+    }
+    
+    loopeuclidean <- list() # a list of matrices where the i'th matrix the the euclidean coordinates of the i'th loop
+    for(j in 1:length(loopOFFcoord)){
+      loopi <- c()
+      loopicoord <- loopOFFcoord[[j]] # the coordinate matrix for the i'th loop in the loopcoord list
+      for (i in 6:length(loopicoord)){
+        loopi <- c(loopi, strtoi(loopicoord[i]))  # the list of euclidean coordinates for the vertices in the i'th loop
+      }
+      loopeuclidean[[j]] <- loopi
+    }
+    
+    loopvertex <- list()
+    for( i in 1:length(loopeuclidean)){
+      loopjvertex <- c()
+      for( j in 1:length(loopeuclidean[[i]])){
+        loopjvertex <- c(loopjvertex, loopFile[j,])
+      }
+      loopvertex[[i]] <- loopjvertex
+    }
+    
+    #
+    # Collect the coordinates from the pointcloud file
+    #
+    componentcoords <- list(NULL)
+    for(i in 1:length(loopeuclidean)){
+      index <- loopeuclidean[[i]]
+      component <- c()
+      for( j in 1:(length(index))){
+        point <- pointcloud[index[j-1],]
+        component <- rbind(component, point)
+      }
+      component <- as.data.frame(component)
+      componentcoords[[i]] <- component
+      
+    }
+    
+    
+    
+    if(plot==TRUE){
+      plot3d(pointcloud, col = "gray", alpha = 0.7)
+      for(i in 1:length(componentcoords)){
+        print(i*25+47)
+        points3d(componentcoords[[i]], col=colors()[i*50+47])#(i*25+47))#(47+i*25))
+      }
+      
+      #lapply(componentcoords, function(x) points3d(x, col = 1:length(componentcoords)))
+      rgl.postscript(paste(getwd(),"/RingFigures/", OFFfile,"plot.pdf", sep=""),"pdf")
+    }
+    return(componentcoords) 
+  }
+
+makeOFF<-
+  function(filename, pointcloud){
+    
+    if(!file.exists(paste(getwd(),"/output/ShortLoop/",sep=""))){
+      dir.create(paste(getwd(),"/output/ShortLoop/",sep=""), showWarnings =FALSE, recursive = TRUE)
+    }
+    file.create(paste(getwd(),"/output/ShortLoop/",filename,".off",sep=""), overwrite = TRUE)
+    OFFfile = paste(getwd(),"/output/ShortLoop/" , filename , ".off",sep="")
+    #"/Documents/phd/TopologicalDistortionProject/DistortionCode/ShortLoop")
+    sink(OFFfile)
+    
+    cat("OFF", "\n",append = TRUE)
+    cat(paste(toString(nrow(pointcloud)),"0","0",sep="\t"), "\n",append = TRUE)
+    for(i in 1:(nrow(pointcloud)-1)){
+      
+      cat(paste(toString(pointcloud[i,1]),toString(pointcloud[i,2]),toString(pointcloud[i,3]),sep="\t"),"\n", append = TRUE)
+      #write(toString(i),"", append=TRUE)
+    }
+    cat(paste(toString(pointcloud[nrow(pointcloud),1]),toString(pointcloud[nrow(pointcloud),2])
+              ,toString(pointcloud[nrow(pointcloud),3]),sep="\t"), append = TRUE)
+    
+    sink(file = NULL)
+    sink(file = NULL)
+    
+    return()
+  }
+
 
 cleanPersCSV <- function(dirPath){
   problemExample <- "/Users/multivax/Documents/PhD/2.spring.17/Classifications-Of-Songs-via-Homology-of-Chroma-Features/project/code/output/persDiag/"

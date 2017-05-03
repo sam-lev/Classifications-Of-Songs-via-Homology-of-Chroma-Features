@@ -1,0 +1,164 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// ShortLoop: software for computing a shortest 1-homology basis on a simplicial complex.
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+This software is developed by the Jyamiti research group 
+headed by Prof. Tamal K. Dey at the Department of Computer Science and Engineering of The Ohio State University.
+
+The binaries are distributed for Linux and Windows.
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Description
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+The "ShortLoop" software computes a shortest basis of the one-dimensional 
+homology group for an arbitrary simplicial complex. For additional details, 
+please refer to
+
+	* Paper: T. K. Dey, J. Sun, and Y. Wang. Approximating loops in a shortest homology basis from point data.
+	Proceedings of the 26th Annual Symposium on Computational Geometry (SOCG 2010),  pages 166-175.
+	arXiv:0909.5654v1[cs.CG], 30th September 2009.
+		
+	"ShortLoop" software can be used in the following two cases:
+	
+	(1) Simplicial complex:
+	
+		"ShortLoop" software takes as an input a file in the OFF format,
+		containing the description of the simplicial complex.
+		
+	(2) Point cloud data
+	
+		"ShortLoop" software takes as an input a point cloud in the OFF format.
+		The Rips complex is built on top of the given point cloud.
+		A shortest basis is then computed for this Rips complex.
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Usage
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	(1) On a simplicial complex:
+		
+		ShortLoop <input.off> -v -t
+
+		Here -v enables the verbose mode and -t enables printing the timing information.
+		
+	(2) On a point cloud data:
+
+		ShortLoop <input.off> -v -t -a 0.01
+
+		Here -a 0.01 defines the alpha value for the Rips complex.
+		
+	In both cases "ShortLoop" will produce three files:
+		
+		<input_loops.txt> - description of the loops in the computed basis;
+		<input_loops.off> - visual representation of the loops;
+		<input_timing.txt> - timing information.
+
+	In case the input complex or a point cloud data is too large, subsampling can be enabled
+	in order to speed up the computation. The loops will not be optimal in this case.
+	However, they may still be sufficiently good for aplications.
+	This is recommended for large point cloud (>30K points) and large complexes (> 100K simplices).
+
+		ShortLoop <input.off> -v -t -s 0.1
+	
+	or
+	
+		ShortLoop <input.off> -v -t -a 0.01 -s 0.1
+
+	Here -s 0.1 denotes that 10% of the input vertices are used in constructing canonical loops
+	(notice that final loops are nevertheless computed on the initial complex).
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Command Line Syntax
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	"ShortLoop" command line syntax:
+	
+		ShortLoop [option]... <input.off>
+
+	Options:
+	
+		--help, -h	Display help and exit
+		--license, -l	Display license information
+		--verbose, -v	Explain what is being done
+		--timing, -t	Dump timing information
+		--sampling, -s	Sampling coefficient (should be in (0,1])
+		--alpha, -a	Alpha value (should be > 0)
+
+	<input.off>
+
+		Can be one of the following:
+	
+		(1) Simplicial complex in OFF format:
+		
+			OFF
+			<number of vertices> <number of faces> <number of edges>
+			<vertex 0 x> <vertex 0 y> <vertex 0 z> # vertex coordinates
+			<vertex 1 x> <vertex 1 y> <vertex 1 z>
+			. . .
+			2 <vertex index> <vertex index> # edges
+			. . .
+			3 <vertex index> <vertex index> <vertex index> # triangles
+			. . .
+
+		(2) Point cloud data in OFF format:
+		
+			OFF
+			<number of vertices> 0 0
+			<vertex 0 x> <vertex 0 y> <vertex 0 z> # vertex coordinates
+			<vertex 1 x> <vertex 1 y> <vertex 1 z>
+			. . .
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Output Files
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	"ShortLoop" produces two output files:
+	
+	(1) <input_file_loops.txt> containing information about loops in the following format:
+	
+		<number of loops> loops
+		Loop 0 (<number of edges> edges, length=<length>): <vertex index > ...
+		Loop 1 (<number of edges> edges, length=<length>): <vertex index > ...
+		. . .
+		Basis length: <basis length>
+		
+	(2) <input_file_loops.off> contains the visual representation of the loops.
+		This file is viewable by Geomview (see http://www.geomview.org/).
+		
+	If the --timing or -t option is used, the following file is also produced:
+	
+		<input_file_timing.txt> contains the timing information:
+		
+		<running time>s
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Example
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	Usage example for a "Sample_complex.off" file containing a simplicial complex:
+	
+		ShortLoop Sample_complex.off -v -t
+		
+	Three files are produced:
+	
+		Sample_complex_loops.txt
+		Sample_complex_loops.off
+		Sample_complex_timing.txt
+
+	Usage example for a "Sample_cloud.off" file containing a point cloud data:
+
+		ShortLoop Sample_cloud.off -v -t -a 0.2
+
+	Three files are produced:
+	
+		Sample_cloud_loops.txt
+		Sample_cloud_loops.off
+		Sample_cloud_timing.txt
